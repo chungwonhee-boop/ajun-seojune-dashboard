@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>👑 아준이 서준이네 가족 대시보드</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="아준서준 대시보드">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="application-name" content="아준서준 대시보드">
+<meta name="theme-color" content="#f6efe1">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="apple-touch-icon.png">
+<style>
+:root{
+  --paper:#f6efe1; --paper2:#efe5d0; --card:#fffdf8; --ink:#4a4234; --ink2:#8a7f6a;
+  --line:#e4dac4; --gold:#c9a227; --accent:#c0392b;
+  --ajun:#e8833a; --ajun-soft:#fdeee1;
+  --seojun:#4f8fd0; --seojun-soft:#e5effa;
+  --wish:#d46a9c; --wish-soft:#fbeaf3;
+  --cal:#7a9e6b; --cal-soft:#eaf2e5;
+  --green:#3f9d63; --red:#c94f4f;
+  --shadow:0 2px 10px rgba(90,70,30,.10), 0 8px 24px rgba(90,70,30,.07);
+}
+*{box-sizing:border-box; margin:0; padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(201,162,39,.07), transparent 30%),
+    radial-gradient(circle at 88% 92%, rgba(79,143,208,.06), transparent 30%),
+    repeating-linear-gradient(45deg, rgba(160,130,60,.025) 0 14px, transparent 14px 28px),
+    var(--paper);
+  color:var(--ink); min-height:100vh;
+}
+button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit}
+input,select{font-family:inherit; font-size:13px; color:var(--ink); background:#fff; border:1.5px solid var(--line); border-radius:9px; padding:7px 9px; outline:none}
+input:focus,select:focus{border-color:var(--gold)}
+.hidden{display:none !important}
+
+/* ===== header ===== */
+header{
+  position:sticky; top:0; z-index:30;
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  padding:12px 20px;
+  background:linear-gradient(180deg,#fffdf6 0%, #faf3e2 100%);
+  border-bottom:1px solid var(--line); box-shadow:0 2px 12px rgba(90,70,30,.08);
+}
+.h-title{display:flex; flex-direction:column; gap:2px}
+.h-title h1{font-size:20px; letter-spacing:-.3px}
+.h-clock{font-size:12.5px; color:var(--ink2); font-variant-numeric:tabular-nums}
+.h-space{flex:1}
+.h-btn{
+  display:inline-flex; align-items:center; gap:6px;
+  background:#fff; border:1.5px solid var(--line); border-radius:999px;
+  padding:8px 14px; font-size:13px; font-weight:600; box-shadow:0 1px 4px rgba(90,70,30,.08);
+  transition:transform .1s, box-shadow .1s;
+}
+.h-btn:hover{transform:translateY(-1px); box-shadow:0 3px 8px rgba(90,70,30,.14)}
+
+/* ===== layout ===== */
+main{
+  max-width:1560px; margin:0 auto; padding:18px;
+  display:grid; grid-template-columns:minmax(270px,315px) minmax(0,1fr) minmax(0,1fr) minmax(270px,315px);
+  gap:16px; align-items:start;
+}
+@media (max-width:1250px){
+  main{grid-template-columns:1fr 1fr}
+}
+@media (max-width:740px){
+  main{grid-template-columns:1fr; padding:12px}
+  header{padding:10px 14px}
+  .h-title h1{font-size:17px}
+}
+.col{
+  background:var(--card); border:1px solid var(--line); border-radius:16px;
+  box-shadow:var(--shadow); padding:16px; position:relative; overflow:hidden;
+}
+.col-kid{border-top:5px solid var(--ajun)}
+.col-kid.k-seojun{border-top-color:var(--seojun)}
+.col-kid.k-ajun .sec-title{color:var(--ajun)}
+.col-kid.k-seojun .sec-title{color:var(--seojun)}
+
+.sec-title{font-size:15px; font-weight:800; display:flex; align-items:center; gap:6px; letter-spacing:-.2px}
+.sec-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; gap:8px; flex-wrap:wrap}
+.mini-btn{
+  font-size:11.5px; font-weight:700; color:var(--ink2);
+  border:1px solid var(--line); background:#fbf7ee; border-radius:999px; padding:4px 10px;
+}
+.mini-btn:hover{color:var(--ink); border-color:#d5c8a8}
+
+/* ===== calendar ===== */
+.cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px}
+.cal-head .ym{font-size:14.5px; font-weight:800}
+.cal-nav{display:flex; gap:4px}
+.cal-nav button{
+  width:28px; height:28px; border-radius:8px; border:1px solid var(--line); background:#fbf7ee;
+  font-size:13px; font-weight:800; color:var(--ink2);
+}
+.cal-nav button.cal-today{width:auto; padding:0 10px; font-size:11.5px}
+.cal-nav button:hover{background:#f3ead6}
+.cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:2px; text-align:center}
+.cal-dow{font-size:11px; color:var(--ink2); padding:4px 0; font-weight:700}
+.cal-dow.sun{color:var(--red)} .cal-dow.sat{color:#4f76a0}
+.cal-cell{
+  position:relative; font-size:12.5px; padding:6px 0 9px; border-radius:8px; min-height:34px;
+  font-variant-numeric:tabular-nums;
+}
+.cal-cell.dim{color:#c9bfa8}
+.cal-cell.sun{color:var(--red)} .cal-cell.sat{color:#4f76a0}
+.cal-cell.today{background:#f7edd3; font-weight:800; box-shadow:inset 0 0 0 1.5px var(--gold)}
+.cal-cell .dot{position:absolute; left:50%; transform:translateX(-50%); bottom:2px; width:5px; height:5px; border-radius:50%; background:var(--accent)}
+
+/* ===== dday ===== */
+.dday-list{display:flex; flex-direction:column; gap:7px; margin-top:6px}
+.dday-item{
+  display:flex; align-items:center; gap:9px; background:#fbf7ee;
+  border:1px solid var(--line); border-radius:11px; padding:8px 10px;
+}
+.dday-item .ic{font-size:16px}
+.dday-item .t{flex:1; min-width:0}
+.dday-item .t b{display:block; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.dday-item .t span{font-size:11px; color:var(--ink2)}
+.dday-badge{
+  font-size:11.5px; font-weight:800; color:#fff; background:var(--cal);
+  border-radius:999px; padding:3px 9px; white-space:nowrap; font-variant-numeric:tabular-nums;
+}
+.dday-badge.d0{background:var(--red)} .dday-badge.past{background:#b9ae95}
+.x-del{
+  width:20px; height:20px; border-radius:6px; color:#b6ab92; font-size:14px; line-height:1;
+  flex:none; display:inline-flex; align-items:center; justify-content:center;
+}
+.x-del:hover{color:var(--red); background:#f7e3e3}
+.form-row{display:flex; gap:6px; margin-top:9px; flex-wrap:wrap}
+.form-row input{flex:1; min-width:0}
+.add-btn{
+  background:var(--cal); color:#fff; font-weight:800; border-radius:9px; padding:7px 13px; font-size:13px;
+  flex:none;
+}
+.add-btn:hover{filter:brightness(1.07)}
+.add-btn.orange{background:var(--ajun)} .add-btn.blue{background:var(--seojun)} .add-btn.pink{background:var(--wish)}
+
+/* ===== kid card ===== */
+.kid-top{display:flex; gap:12px; align-items:center}
+.kid-badge{flex:none; filter:drop-shadow(0 3px 5px rgba(90,70,30,.25))}
+.kid-id{flex:1; min-width:0}
+.kid-name-row{display:flex; align-items:center; gap:7px; flex-wrap:wrap}
+.kid-name{font-size:18px; font-weight:900; letter-spacing:-.3px}
+.lvl-chip{
+  font-size:11.5px; font-weight:800; color:#fff; border-radius:999px; padding:3px 10px;
+  background:linear-gradient(135deg,#c9a227,#e6c25a); box-shadow:0 1px 4px rgba(160,120,20,.3);
+}
+.kid-memo{
+  font-size:11.5px; color:var(--ink2); margin-top:3px; cursor:pointer; border-bottom:1px dashed #cfc4a8;
+  display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.kid-memo:hover{color:var(--ink)}
+.xp-row{display:flex; align-items:center; gap:8px; margin-top:9px}
+.xp-bar{flex:1; height:12px; border-radius:999px; background:#efe7d3; overflow:hidden; box-shadow:inset 0 1px 3px rgba(90,70,30,.15)}
+.xp-fill{height:100%; border-radius:999px; background:linear-gradient(90deg,#e6c25a,#c9a227); transition:width .5s cubic-bezier(.2,.8,.3,1)}
+.k-ajun .xp-fill{background:linear-gradient(90deg,#f5b26b,#e8833a)}
+.k-seojun .xp-fill{background:linear-gradient(90deg,#79b0e4,#4f8fd0)}
+.xp-num{font-size:11.5px; font-weight:800; color:var(--ink2); font-variant-numeric:tabular-nums; white-space:nowrap}
+.dex-row{display:flex; align-items:center; gap:6px; margin-top:7px; flex-wrap:wrap}
+.dex-label{font-size:11px; font-weight:800; color:var(--ink2)}
+.dex-dots{display:flex; gap:3px; flex-wrap:wrap}
+.dex-dot{
+  width:17px; height:17px; border-radius:5px; font-size:9px; font-weight:800;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:#efe7d3; color:#c0b498; border:1px solid #e4dac4;
+}
+.dex-dot.on{background:linear-gradient(135deg,#e6c25a,#c9a227); color:#fff; border-color:#b08d1c}
+.next-rank{font-size:11px; color:var(--ink2); margin-top:6px}
+.next-rank b{color:var(--gold)}
+
+/* sections inside kid card */
+.sub-sec{border-top:1.5px dashed var(--line); margin-top:14px; padding-top:12px}
+
+/* schedule today */
+.sched-list{display:flex; flex-direction:column; gap:4px; margin-top:8px}
+.sched-item{display:flex; align-items:baseline; gap:8px; font-size:12.5px; padding:4px 8px; border-radius:8px; background:#fbf7ee}
+.sched-item .tm{font-weight:800; color:var(--ink2); font-variant-numeric:tabular-nums; white-space:nowrap; font-size:11.5px}
+.k-ajun .sched-item .tm{color:var(--ajun)} .k-seojun .sched-item .tm{color:var(--seojun)}
+.sched-item .lb{flex:1}
+.sched-empty{font-size:12px; color:var(--ink2); padding:6px 2px}
+.sched-now{box-shadow:inset 0 0 0 1.5px var(--gold); background:#fdf6e0}
+
+/* quests */
+.q-head{display:flex; align-items:center; gap:7px; flex-wrap:wrap}
+.q-count{font-size:12.5px; font-weight:800; color:var(--ink2); font-variant-numeric:tabular-nums}
+.joker-chip{
+  font-size:10.5px; font-weight:800; border-radius:999px; padding:3px 9px;
+  background:#f1e8d2; color:#9a8b64; border:1px dashed #d5c8a8;
+}
+.joker-chip.got{background:#e9f6ee; color:var(--green); border:1px solid #bfe2cd}
+.q-list{display:flex; flex-direction:column; gap:6px; margin-top:9px}
+.q-item{border:1px solid var(--line); border-radius:11px; background:#fff; overflow:visible; position:relative}
+.q-item.done{background:#f3f6ef}
+.q-main{display:flex; align-items:center; gap:8px; padding:8px 8px 8px 10px}
+.q-check{
+  width:22px; height:22px; border-radius:50%; border:2px solid #d5c8a8; flex:none;
+  display:inline-flex; align-items:center; justify-content:center; font-size:12px; color:#fff; font-weight:900;
+  transition:background .15s, border-color .15s;
+}
+.q-item.done .q-check{background:var(--green); border-color:var(--green)}
+.q-title{flex:1; min-width:0; font-size:13px; font-weight:600; cursor:default}
+.q-item.done .q-title{color:#a9a08a; text-decoration:line-through}
+.q-xp{font-size:11px; font-weight:800; color:var(--gold); white-space:nowrap}
+.q-goal{font-size:10.5px; font-weight:700; color:var(--ink2); background:#f5efdf; border-radius:999px; padding:2px 8px; white-space:nowrap; font-variant-numeric:tabular-nums}
+.q-goal.full{background:#e9f6ee; color:var(--green)}
+.q-item.rest{background:#faf7ef; border-style:dashed; opacity:.75}
+.q-rest-ic{display:inline-flex; align-items:center; justify-content:center; font-size:13px; width:22px; height:22px; flex:none}
+.q-set{width:22px;height:22px;border-radius:6px;color:#c2b698;font-size:12px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.q-set:hover{background:#f5efdf; color:var(--ink)}
+.q-settings{border-top:1px dashed var(--line); padding:8px 10px; background:#fbf8f0; display:flex; flex-direction:column; gap:7px}
+.chips{display:flex; gap:4px; flex-wrap:wrap; align-items:center}
+.chips .cl{font-size:10.5px; color:var(--ink2); font-weight:700; margin-right:2px}
+.chip{
+  width:26px; height:24px; border-radius:7px; font-size:11px; font-weight:800;
+  border:1px solid var(--line); background:#fff; color:#b6ab92;
+}
+.chip.on{background:var(--cal); border-color:var(--cal); color:#fff}
+.q-rest{font-size:11px; color:#9a8b64; background:#f5efdf; border-radius:9px; padding:6px 10px; margin-top:8px}
+.q-rest b{color:#7a6c45}
+
+/* wish */
+.wish-list{display:flex; flex-direction:column; gap:7px; margin-top:9px}
+.wish-item{display:flex; align-items:flex-start; gap:9px; border:1px solid var(--line); border-radius:11px; padding:9px 10px; background:#fff}
+.wish-item.done{background:#f3f6ef}
+.w-check{
+  width:22px; height:22px; border-radius:50%; border:2px solid #d5c8a8; flex:none; margin-top:1px;
+  display:inline-flex; align-items:center; justify-content:center; font-size:12px; color:#fff; font-weight:900;
+}
+.wish-item.done .w-check{background:var(--green); border-color:var(--green)}
+.w-body{flex:1; min-width:0}
+.w-title{font-size:13px; font-weight:700; word-break:break-all}
+.wish-item.done .w-title{text-decoration:line-through; color:#a9a08a}
+.w-memo{font-size:11.5px; color:var(--ink2); margin-top:2px}
+.w-who{font-size:10.5px; font-weight:800; color:#fff; border-radius:999px; padding:2.5px 8px; flex:none; margin-top:1px}
+.w-who.ajun{background:var(--ajun)} .w-who.seojun{background:var(--seojun)} .w-who.family{background:var(--wish)}
+.wish-guide{font-size:12px; color:var(--ink2); background:var(--wish-soft); border-radius:10px; padding:9px 11px; margin-bottom:4px}
+.wish-empty{font-size:12px; color:#b6ab92; text-align:center; padding:14px 0}
+.who-badge-wrap{display:flex; align-items:center; gap:8px; flex:1; min-width:0; flex-wrap:wrap}
+
+/* ===== modals ===== */
+.modal{position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; padding:18px}
+.modal-bg{position:absolute; inset:0; background:rgba(60,48,25,.45)}
+.modal-card{
+  position:relative; background:var(--card); border-radius:18px; box-shadow:0 20px 60px rgba(50,40,15,.35);
+  max-width:680px; width:100%; max-height:88vh; overflow:auto; padding:20px;
+}
+.modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px}
+.modal-head h2{font-size:17px}
+.modal-close{
+  width:30px; height:30px; border-radius:9px; border:1px solid var(--line); background:#fbf7ee;
+  font-size:15px; font-weight:800; color:var(--ink2);
+}
+.rank-row{
+  display:flex; align-items:center; gap:12px; padding:9px 10px; border:1px solid var(--line);
+  border-radius:12px; margin-bottom:7px; background:#fffdf8;
+}
+.rank-row .rk-name{font-size:13.5px; font-weight:800}
+.rank-row .rk-name small{font-weight:700; color:var(--gold); margin-right:5px}
+.rank-row .rk-desc{font-size:11.5px; color:var(--ink2); margin-top:2px; line-height:1.45}
+.rank-row.top{background:linear-gradient(135deg,#fff8dc,#fdf0c2); border-color:#dfb94a}
+.rank-cond{
+  font-size:10.5px; font-weight:800; color:#8a6508; background:#fdf4da; border-radius:999px;
+  padding:3px 9px; white-space:nowrap; align-self:flex-start;
+}
+/* timetable modal */
+.tt-tabs{display:flex; gap:5px; margin-bottom:12px; flex-wrap:wrap}
+.tt-tab{
+  flex:1; min-width:44px; padding:7px 0; text-align:center; font-size:12.5px; font-weight:800;
+  border:1px solid var(--line); border-radius:9px; background:#fff; color:var(--ink2);
+}
+.tt-tab.on{background:var(--ink); border-color:var(--ink); color:#fff}
+.tt-dayname{font-size:14px; font-weight:800; margin-bottom:8px}
+.tt-list{display:flex; flex-direction:column; gap:6px; margin-bottom:10px}
+.tt-item{display:flex; align-items:center; gap:9px; background:#fbf7ee; border:1px solid var(--line); border-radius:10px; padding:8px 10px}
+.tt-item .tm{font-size:12px; font-weight:800; color:var(--gold); font-variant-numeric:tabular-nums; white-space:nowrap}
+.tt-item .lb{flex:1; font-size:13px; font-weight:600; outline:none; border-radius:6px; padding:2px 4px}
+.tt-item .lb:hover{background:#f1e8d2}
+.tt-item .lb:focus{background:#fff; box-shadow:0 0 0 2px var(--gold)}
+.tt-add{display:flex; gap:6px; flex-wrap:wrap; border-top:1.5px dashed var(--line); padding-top:12px}
+.tt-add input[type="time"]{width:104px}
+.tt-empty{font-size:12px; color:#b6ab92; padding:10px 2px}
+
+/* ===== standby ===== */
+#standby{
+  position:fixed; inset:0; z-index:80; cursor:pointer;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(201,162,39,.18), transparent 40%),
+    radial-gradient(circle at 80% 85%, rgba(79,143,208,.15), transparent 40%),
+    linear-gradient(160deg,#2d2a22 0%, #1e1c16 100%);
+  color:#f5eddc; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+  padding:24px; text-align:center;
+}
+#standby .sb-clock{font-size:min(17vw,120px); font-weight:900; letter-spacing:1px; font-variant-numeric:tabular-nums; line-height:1.05}
+#standby .sb-date{font-size:min(4.5vw,24px); font-weight:700; color:#d8cdaa}
+#standby .sb-kids{display:flex; gap:18px; margin-top:26px; flex-wrap:wrap; justify-content:center}
+.sb-kid{
+  background:rgba(255,253,246,.08); border:1px solid rgba(245,237,220,.2); border-radius:18px;
+  padding:18px 26px; min-width:240px;
+}
+.sb-kid .nm{font-size:19px; font-weight:900; display:flex; align-items:center; gap:10px; justify-content:center}
+.sb-kid .rk{font-size:14px; color:#e6c25a; font-weight:800; margin-top:6px}
+.sb-kid .pr{font-size:12.5px; color:#cfc4a4; margin-top:8px; font-variant-numeric:tabular-nums}
+.sb-kid .prb{height:8px; border-radius:999px; background:rgba(245,237,220,.18); margin-top:6px; overflow:hidden}
+.sb-kid .prb i{display:block; height:100%; background:linear-gradient(90deg,#e6c25a,#e8833a); border-radius:999px}
+#standby .sb-hint{margin-top:30px; font-size:12px; color:#8f8873}
+
+/* ===== celebrations ===== */
+.rankup{
+  position:absolute; left:50%; top:38%; transform:translate(-50%,-50%); z-index:20;
+  background:linear-gradient(135deg,#fff8dc,#ffe9a4); color:#7a5a12;
+  border:2px solid var(--gold); border-radius:16px; padding:14px 22px;
+  font-size:15px; font-weight:900; text-align:center; box-shadow:0 10px 30px rgba(160,120,20,.35);
+  animation:pop .5s cubic-bezier(.2,1.6,.4,1), fadeout .6s ease 3.2s forwards;
+  pointer-events:none; white-space:nowrap;
+}
+.rankup.max{background:linear-gradient(135deg,#fff3c2,#ffd76e); color:#8a3d08; border-color:#c0392b; font-size:16px}
+@keyframes pop{0%{transform:translate(-50%,-50%) scale(.4); opacity:0} 100%{transform:translate(-50%,-50%) scale(1); opacity:1}}
+@keyframes fadeout{to{opacity:0; transform:translate(-50%,-70%)}}
+.confetti{position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:19}
+.confetti i{position:absolute; top:-24px; animation:fall linear forwards; font-style:normal}
+@keyframes fall{to{transform:translateY(112vh) rotate(680deg)}}
+.joker-toast{
+  position:absolute; right:12px; top:6px; z-index:20; font-size:12px; font-weight:900; color:var(--green);
+  background:#e9f6ee; border:1.5px solid #bfe2cd; border-radius:999px; padding:5px 12px;
+  animation:pop .4s cubic-bezier(.2,1.6,.4,1), fadeout .6s ease 2.6s forwards; pointer-events:none;
+}
+footer{max-width:1560px; margin:0 auto; padding:6px 20px 26px; font-size:11px; color:#b6ab92; text-align:center}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-title">
+    <h1>👑 아준이 서준이네 가족 대시보드</h1>
+    <div class="h-clock" id="clock">—</div>
+  </div>
+  <div class="h-space"></div>
+  <button class="h-btn" id="btn-rank" data-act="rank-open">🃏 계급표</button>
+  <button class="h-btn" id="btn-standby" data-act="standby-open">🌙 대기화면</button>
+</header>
+
+<main>
+  <section class="col" id="col-cal"></section>
+  <section class="col col-kid k-ajun" id="card-ajun"></section>
+  <section class="col col-kid k-seojun" id="card-seojun"></section>
+  <section class="col" id="col-wish"></section>
+</main>
+
+<footer>모든 내용은 이 브라우저(localStorage)에 자동 저장돼요 · 파일 하나로 오프라인에서도 동작해요</footer>
+
+<!-- 계급표 모달 -->
+<div class="modal hidden" id="modal-rank">
+  <div class="modal-bg" data-act="rank-close"></div>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2>🃏 달무티 12계급표</h2>
+      <button class="modal-close" data-act="rank-close">✕</button>
+    </div>
+    <div id="rank-table"></div>
+  </div>
+</div>
+
+<!-- 전체 시간표 모달 -->
+<div class="modal hidden" id="modal-tt">
+  <div class="modal-bg" data-act="tt-close"></div>
+  <div class="modal-card" id="tt-card"></div>
+</div>
+
+<!-- 대기화면 -->
+<div id="standby" class="hidden" data-act="standby-close"></div>
+
+<script>
+"use strict";
+/* ================================================================
+   아준·서준 달무티 가족 대시보드 — 단일 파일, 외부 의존성 없음
+   ================================================================ */
+
+var LS_KEY = "ajunSeojunFamilyDashboard.v1";
+
+/* ---------- 날짜/시간 유틸 ---------- */
+function pad2(n){ return String(n).padStart(2,"0"); }
+function todayStr(d){ d = d || new Date(); return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }
+function parseDate(s){ var p=s.split("-"); return new Date(+p[0], +p[1]-1, +p[2]); }
+function dayIdxMon(d){ d = d || new Date(); return (d.getDay()+6)%7; } /* 0=월 ... 6=일 */
+var DAYS = ["월","화","수","목","금","토","일"];
+function weekMonday(d){
+  d = d || new Date();
+  var m = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  m.setDate(m.getDate() - dayIdxMon(m));
+  return m;
+}
+function dateStr(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function uid(){ return Math.random().toString(36).slice(2,9); }
+
+/* ---------- 달무티 12계급 ---------- */
+var RANKS = [
+  {lv:1,  card:12, name:"농노",           desc:"모두의 짐을 나르는 최하층. 하지만 위대한 달무티도 여기서 시작!"},
+  {lv:2,  card:11, name:"광부",           desc:"땅속에서 성실함이라는 보물을 캐요."},
+  {lv:3,  card:10, name:"양치기",         desc:"양 떼처럼 차분하게, 책임감을 배우는 계급."},
+  {lv:4,  card:9,  name:"요리사",         desc:"정성을 담아 일하는 마을의 손재주 대장."},
+  {lv:5,  card:8,  name:"석공",           desc:"한 층 한 층 단단히 쌓아 올려요."},
+  {lv:6,  card:7,  name:"재봉사",         desc:"빈틈없이 꼼꼼한, 마을에 없어서는 안 될 인재."},
+  {lv:7,  card:6,  name:"기사",           desc:"용맹과 규율! 귀족의 문턱에 들어선 계급."},
+  {lv:8,  card:5,  name:"수녀원장",       desc:"지혜와 사랑으로 사람들을 이끌어요."},
+  {lv:9,  card:4,  name:"남작부인",       desc:"우아함과 품격을 갖춘 상층 계급."},
+  {lv:10, card:3,  name:"시종장",         desc:"왕가를 모시는 어린 왕자·공주님!"},
+  {lv:11, card:2,  name:"대주교",         desc:"왕국의 백성을 위해 조언하는 지혜의 정점."},
+  {lv:12, card:1,  name:"위대한 달무티",  desc:"왕국의 최고 통치자! 조커처럼 무엇이든 될 수 있어요. 👑"}
+];
+function xpNeeded(l){ return 100 + (l-1)*20; }
+var CUM = [0,0]; /* CUM[l] = 레벨 l에 도달하기 위해 필요한 누적 XP (l>=2) */
+for (var _l=2; _l<=12; _l++) CUM[_l] = CUM[_l-1] + xpNeeded(_l-1);
+function levelForXp(xp){
+  var lv = 1;
+  while (lv < 12 && xp >= CUM[lv+1]) lv++;
+  return lv;
+}
+function rankOf(lv){ return RANKS[lv-1]; }
+
+/* ---------- 달무티 카드 SVG 배지 ---------- */
+var TIER_PAL = [
+  {bg1:"#efe9dc", bg2:"#d8cdb4", bd:"#8f7f5c", ink:"#5c5140", ac:"#a08a63"}, /* 12~10 */
+  {bg1:"#e7eff8", bg2:"#c2d6ea", bd:"#4f76a0", ink:"#2f4a66", ac:"#4f76a0"}, /* 9~7  */
+  {bg1:"#efe6f8", bg2:"#d3bfec", bd:"#6f4fa0", ink:"#4a3370", ac:"#6f4fa0"}, /* 6~4  */
+  {bg1:"#fdf4da", bg2:"#f1dda6", bd:"#a67c1f", ink:"#7a5a12", ac:"#a67c1f"}, /* 3~2  */
+  {bg1:"#fff8dc", bg2:"#ffe9a4", bd:"#c9a227", ink:"#8a6508", ac:"#c0392b"}  /* 1    */
+];
+function cardIconSVG(card, ink, ac){
+  var s = "";
+  switch(card){
+    case 1: /* 왕관 */
+      s = '<path d="M19 45 L23 31 L30 41 L37 31 L41 45 Z" fill="'+ac+'" stroke="'+ink+'" stroke-width="1.4" stroke-linejoin="round"/>'
+        + '<rect x="19" y="45" width="22" height="6" rx="2" fill="'+ink+'"/>'
+        + '<circle cx="23" cy="29" r="2.2" fill="'+ac+'" stroke="'+ink+'" stroke-width="1"/>'
+        + '<circle cx="37" cy="29" r="2.2" fill="'+ac+'" stroke="'+ink+'" stroke-width="1"/>'
+        + '<circle cx="30" cy="25" r="2.2" fill="'+ac+'" stroke="'+ink+'" stroke-width="1"/>';
+      break;
+    case 2: /* 대주교 모자 */
+      s = '<path d="M30 25 C24 29 21.5 35 21.5 43 L38.5 43 C38.5 35 36 29 30 25 Z" fill="'+ink+'"/>'
+        + '<rect x="20" y="43" width="20" height="4.5" rx="2" fill="'+ac+'"/>'
+        + '<rect x="28.9" y="30" width="2.2" height="8" fill="'+ac+'"/><rect x="26" y="32.9" width="8" height="2.2" fill="'+ac+'"/>';
+      break;
+    case 3: /* 촛대 */
+      s = '<ellipse cx="30" cy="31" rx="2.6" ry="4" fill="'+ac+'"/>'
+        + '<rect x="27.4" y="36" width="5.2" height="13" rx="1.6" fill="'+ink+'"/>'
+        + '<path d="M22 51 h16" stroke="'+ink+'" stroke-width="3" stroke-linecap="round"/>'
+        + '<path d="M24 49 v-3 M36 49 v-3" stroke="'+ink+'" stroke-width="2" stroke-linecap="round"/>';
+      break;
+    case 4: /* 티아라 */
+      s = '<path d="M19.5 45 Q24 29 30 40 Q36 29 40.5 45 Z" fill="'+ac+'" stroke="'+ink+'" stroke-width="1.4" stroke-linejoin="round"/>'
+        + '<circle cx="30" cy="33.5" r="2.4" fill="'+ink+'"/>'
+        + '<circle cx="19.5" cy="46.5" r="1.8" fill="'+ink+'"/><circle cx="40.5" cy="46.5" r="1.8" fill="'+ink+'"/>';
+      break;
+    case 5: /* 십자가 */
+      s = '<rect x="28" y="27" width="4.4" height="22" rx="1.4" fill="'+ink+'"/>'
+        + '<rect x="22.5" y="32.5" width="15.4" height="4.4" rx="1.4" fill="'+ink+'"/>'
+        + '<path d="M23 52 h14" stroke="'+ac+'" stroke-width="3" stroke-linecap="round"/>';
+      break;
+    case 6: /* 방패 */
+      s = '<path d="M30 26 L40.5 30 V39 C40.5 47.5 35.5 52 30 54.5 C24.5 52 19.5 47.5 19.5 39 V30 Z" fill="'+ink+'"/>'
+        + '<path d="M30 29 L37.5 32 V39 C37.5 45 34 48.8 30 50.9 Z" fill="'+ac+'"/>';
+      break;
+    case 7: /* 바늘과 실 */
+      s = '<line x1="22" y1="51" x2="37" y2="29" stroke="'+ink+'" stroke-width="3" stroke-linecap="round"/>'
+        + '<circle cx="38.3" cy="27.3" r="2.6" fill="none" stroke="'+ink+'" stroke-width="1.8"/>'
+        + '<path d="M38 31 C46 35 44 45 35.5 46.5" fill="none" stroke="'+ac+'" stroke-width="2" stroke-linecap="round"/>';
+      break;
+    case 8: /* 벽돌 */
+      s = '<g fill="'+ink+'"><rect x="20" y="30" width="12" height="6.5" rx="1"/><rect x="33.5" y="30" width="7" height="6.5" rx="1"/>'
+        + '<rect x="24" y="38" width="12" height="6.5" rx="1"/><rect x="37.5" y="38" width="3" height="6.5" rx="1"/><rect x="20" y="38" width="2.5" height="6.5" rx="1"/>'
+        + '<rect x="20" y="46" width="12" height="6.5" rx="1"/><rect x="33.5" y="46" width="7" height="6.5" rx="1"/></g>'
+        + '<rect x="20" y="30" width="20.5" height="22.5" fill="none" stroke="'+ac+'" stroke-width="1.4" rx="2"/>';
+      break;
+    case 9: /* 냄비 */
+      s = '<path d="M20 38 h20 v7 c0 5-4.5 8.5-10 8.5s-10-3.5-10-8.5 Z" fill="'+ink+'"/>'
+        + '<rect x="23.5" y="33.5" width="13" height="4.5" rx="2" fill="'+ac+'"/>'
+        + '<path d="M20 40 h-3 M40 40 h3" stroke="'+ink+'" stroke-width="2.4" stroke-linecap="round"/>';
+      break;
+    case 10: /* 양 */
+      s = '<g fill="'+ink+'"><circle cx="25" cy="43" r="5.6"/><circle cx="31" cy="41" r="6.2"/><circle cx="36" cy="44" r="5.2"/></g>'
+        + '<circle cx="39.5" cy="39" r="3.4" fill="'+ac+'"/>'
+        + '<path d="M28 50 v2.5 M34 50 v2.5" stroke="'+ink+'" stroke-width="1.8" stroke-linecap="round"/>';
+      break;
+    case 11: /* 곡괭이 */
+      s = '<path d="M20 37 C26 28 38 26.5 44 32.5" fill="none" stroke="'+ink+'" stroke-width="3.4" stroke-linecap="round"/>'
+        + '<line x1="31" y1="28.5" x2="23" y2="52" stroke="'+ac+'" stroke-width="2.8" stroke-linecap="round"/>';
+      break;
+    case 12: /* 자루 두 개 */
+      s = '<g fill="'+ink+'"><circle cx="25.5" cy="46" r="7"/><circle cx="35" cy="46" r="7"/></g>'
+        + '<path d="M25.5 39 l-2.5-4.5 h5 Z" fill="'+ac+'"/><path d="M35 39 l-2.5-4.5 h5 Z" fill="'+ac+'"/>'
+        + '<path d="M28 46 h4.5" stroke="'+ac+'" stroke-width="1.8"/>';
+      break;
+  }
+  return s;
+}
+function badgeSVG(rank, w){
+  var r = rankOf(rank), p = TIER_PAL[r.card>=10?0 : r.card>=7?1 : r.card>=4?2 : r.card>=2?3 : 4];
+  var h = Math.round(w*1.4);
+  return '<svg class="kid-badge-svg" width="'+w+'" height="'+h+'" viewBox="0 0 60 84" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+esc(r.card+" "+r.name)+'">'
+    + '<defs><linearGradient id="bg'+rank+'-'+w+'" x1="0" y1="0" x2="1" y2="1">'
+    + '<stop offset="0" stop-color="'+p.bg1+'"/><stop offset="1" stop-color="'+p.bg2+'"/></linearGradient></defs>'
+    + '<rect x="1.5" y="1.5" width="57" height="81" rx="7" fill="url(#bg'+rank+'-'+w+')" stroke="'+p.bd+'" stroke-width="2.4"/>'
+    + '<rect x="5" y="5" width="50" height="74" rx="5" fill="none" stroke="'+p.bd+'" stroke-width="0.9" opacity="0.65"/>'
+    + '<circle cx="8.5" cy="8.5" r="1.4" fill="'+p.ac+'"/><circle cx="51.5" cy="8.5" r="1.4" fill="'+p.ac+'"/>'
+    + '<circle cx="8.5" cy="75.5" r="1.4" fill="'+p.ac+'"/><circle cx="51.5" cy="75.5" r="1.4" fill="'+p.ac+'"/>'
+    + '<text x="30" y="20" text-anchor="middle" font-family="Georgia,serif" font-size="14.5" font-weight="bold" fill="'+p.ink+'">'+r.card+'</text>'
+    + '<g>'+cardIconSVG(r.card, p.ink, p.ac)+'</g>'
+    + '<text x="30" y="71.5" text-anchor="middle" font-family="sans-serif" font-size="'+(r.name.length>4?6.4:8)+'" font-weight="bold" fill="'+p.ink+'">'+esc(r.name)+'</text>'
+    + '</svg>';
+}
+
+/* ---------- 기본 데이터 ---------- */
+function allDays(){ return [0,1,2,3,4,5,6]; }
+function daysExcept(arr){ return allDays().filter(function(d){ return arr.indexOf(d)<0; }); }
+function Q(title,xp,days,goal){ return {id:uid(), title:title, xp:xp, days:days, goal:goal, week:[], done:false, doneDate:null}; }
+
+function defaultState(){
+  var mon0 = weekMonday(); var wk = [];
+  return {
+    v:1, lastDate: todayStr(),
+    calY: new Date().getFullYear(), calM: new Date().getMonth(),
+    kids: [
+      {
+        id:"ajun", name:"아준", memo:"", xp:0, maxLevel:1, jokerDate:null,
+        sched:{
+          0:[{s:"08:00",e:"",l:"스트레칭 (학교 가기 전)"},{s:"08:20",e:"",l:"리프팅 (학교 가기 전)"},{s:"08:40",e:"15:00",l:"학교"},{s:"15:00",e:"19:00",l:"축구"},{s:"20:00",e:"20:30",l:"한자"}],
+          1:[{s:"08:00",e:"",l:"스트레칭 (학교 가기 전)"},{s:"08:20",e:"",l:"리프팅 (학교 가기 전)"},{s:"08:40",e:"14:00",l:"학교"},{s:"14:00",e:"15:00",l:"영어"},{s:"15:00",e:"19:00",l:"축구"},{s:"19:10",e:"19:30",l:"구몬"}],
+          2:[{s:"08:00",e:"",l:"스트레칭 (학교 가기 전)"},{s:"08:20",e:"",l:"리프팅 (학교 가기 전)"},{s:"08:40",e:"14:00",l:"학교"},{s:"14:00",e:"15:00",l:"수학"},{s:"15:00",e:"19:00",l:"축구"}],
+          3:[{s:"08:00",e:"",l:"스트레칭 (학교 가기 전)"},{s:"08:20",e:"",l:"리프팅 (학교 가기 전)"},{s:"08:40",e:"15:00",l:"학교"},{s:"15:00",e:"19:00",l:"축구"}],
+          4:[{s:"08:00",e:"",l:"등교 (학교)"},{s:"15:00",e:"19:00",l:"축구"}],
+          5:[{s:"10:00",e:"12:00",l:"딥독"},{s:"12:30",e:"13:30",l:"영어학원"}],
+          6:[]
+        },
+        quests:[
+          Q("아침 스트레칭 (8:00)",10,[0,1,2,3],4),
+          Q("아침 리프팅 (8:20)",10,[0,1,2,3],4),
+          Q("학교 책가방 챙기기",10,allDays(),7),
+          Q("학교 숙제 / 알림장 확인",20,allDays(),7),
+          Q("방 정리 5분",10,allDays(),7)
+        ]
+      },
+      {
+        id:"seojun", name:"서준", memo:"", xp:0, maxLevel:1, jokerDate:null,
+        sched:{
+          0:[{s:"07:00",e:"16:30",l:"학교"},{s:"16:50",e:"17:30",l:"수학과외"},{s:"19:40",e:"20:10",l:"한자과외"}],
+          1:[{s:"07:00",e:"16:30",l:"학교"},{s:"17:00",e:"18:30",l:"영어학원"},{s:"19:00",e:"",l:"구몬 국어"}],
+          2:[{s:"07:00",e:"16:30",l:"학교"},{s:"17:00",e:"18:30",l:"영어학원"}],
+          3:[{s:"07:00",e:"16:30",l:"학교"}],
+          4:[{s:"07:00",e:"14:30",l:"학교"},{s:"15:00",e:"16:30",l:"축구"}],
+          5:[], 6:[]
+        },
+        quests:[
+          Q("학교 숙제",20,[0,1,2,3,4],5),
+          Q("학교 책가방 싸기",10,[0,1,2,3,4],5),
+          Q("수학 숙제",20,daysExcept([0]),6),   /* 월요일 = 수학과외 날 */
+          Q("구몬 숙제",15,daysExcept([1]),5),   /* 화요일 = 구몬 국어 날 */
+          Q("한자 숙제",15,daysExcept([0]),4),   /* 월요일 = 한자과외 날 */
+          Q("영어학원 숙제",20,daysExcept([1,2]),2), /* 화·수 = 영어학원 날 */
+          Q("딥독 숙제",20,allDays(),2)
+        ]
+      }
+    ],
+    ddys:[],
+    wish:[
+      {id:uid(), title:"조커 카드 스티커 세트", who:"아준", memo:"", done:false},
+      {id:uid(), title:"새 축구공", who:"서준", memo:"", done:false}
+    ]
+  };
+}
+/* D-Day 샘플: 오늘 기준 +4일, +5일 */
+function sampleDdays(){
+  function plus(n){ var d=new Date(); d.setDate(d.getDate()+n); return dateStr(d); }
+  return [
+    {id:uid(), title:"가족 보드게임 밤", date:plus(4)},
+    {id:uid(), title:"주말 나들이", date:plus(5)}
+  ];
+}
+
+/* ---------- 상태 저장/복원 ---------- */
+var S = null;
+function load(){
+  try{
+    var raw = localStorage.getItem(LS_KEY);
+    if(!raw) return null;
+    var st = JSON.parse(raw);
+    if(!st || !st.kids) return null;
+    return st;
+  }catch(e){ return null; }
+}
+function save(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){}
+}
+
+/* 오늘 요일 기준: 활성/휴식 퀘스트 분리, 지난날 체크 해제 */
+function normalizeDay(){
+  var t = todayStr();
+  if(S.lastDate !== t){
+    S.kids.forEach(function(k){
+      k.quests.forEach(function(q){
+        if(q.doneDate !== t){ q.done = false; q.doneDate = null; }
+      });
+      if(k.jokerDate !== t) k.jokerDate = null;
+    });
+    S.lastDate = t;
+    save();
+  }
+  var monD = weekMonday();
+  var mon = dateStr(monD);
+  var sunD = new Date(monD.getFullYear(), monD.getMonth(), monD.getDate()+6);
+  S.kids.forEach(function(k){
+    k.quests.forEach(function(q){
+      q.week = (q.week||[]).filter(function(d){ return d >= mon && d <= dateStr(sunD); });
+    });
+    for(var d=0; d<7; d++){
+      (k.sched[d]||[]).forEach(function(it){ if(!it.id) it.id = uid(); });
+    }
+  });
+}
+function activeQuests(k){
+  var di = dayIdxMon();
+  return k.quests.filter(function(q){ return (q.days||[]).indexOf(di) >= 0; });
+}
+function restQuests(k){
+  var di = dayIdxMon();
+  return k.quests.filter(function(q){ return (q.days||[]).indexOf(di) < 0; });
+}
+
+/* ---------- 렌더링: 공통 ---------- */
+var ui = { ttKid:null, ttDay:dayIdxMon(), openSettings:{} };
+
+function fmtClock(d){
+  var h = d.getHours(), m = pad2(d.getMinutes()), s = pad2(d.getSeconds());
+  var ampm = h<12 ? "오전" : "오후";
+  var h12 = h%12; if(h12===0) h12=12;
+  return ampm+" "+h12+":"+m+":"+s;
+}
+var DOW_KR = ["일","월","화","수","목","금","토"];
+function fmtDateKR(d){
+  return d.getFullYear()+"년 "+(d.getMonth()+1)+"월 "+d.getDate()+"일 ("+DOW_KR[d.getDay()]+")";
+}
+function renderClock(){
+  var d = new Date();
+  document.getElementById("clock").textContent = fmtDateKR(d)+" · "+fmtClock(d);
+}
+
+/* ---------- 렌더링: 달력 & D-Day ---------- */
+function renderCal(){
+  var y = S.calY, m = S.calM;
+  var first = new Date(y, m, 1);
+  var startCol = first.getDay(); /* 0=일 */
+  var dim = new Date(y, m+1, 0).getDate();
+  var dimPrev = new Date(y, m, 0).getDate();
+  var tstr = todayStr();
+  var ddSet = {};
+  S.ddys.forEach(function(dd){ ddSet[dd.date] = true; });
+
+  var html = '<div class="sec-head"><div class="sec-title">🗓️ 월간 달력</div></div>'
+    + '<div class="cal-head">'
+    + '<div class="ym">'+y+"년 "+(m+1)+"월</div>"
+    + '<div class="cal-nav">'
+    + '<button data-act="cal-prev" aria-label="이전 달">‹</button>'
+    + '<button class="cal-today" data-act="cal-today">오늘</button>'
+    + '<button data-act="cal-next" aria-label="다음 달">›</button>'
+    + '</div></div><div class="cal-grid">';
+  var dows = ["일","월","화","수","목","금","토"];
+  dows.forEach(function(dn,i){
+    html += '<div class="cal-dow'+(i===0?" sun":i===6?" sat":"")+'">'+dn+'</div>';
+  });
+  for(var i=0;i<startCol;i++) html += '<div class="cal-cell dim">'+(dimPrev-startCol+1+i)+'</div>';
+  for(var day=1; day<=dim; day++){
+    var d = new Date(y,m,day), ds = dateStr(d), col = d.getDay();
+    var cls = "cal-cell";
+    if(col===0) cls += " sun"; if(col===6) cls += " sat";
+    if(ds===tstr) cls += " today";
+    html += '<div class="'+cls+'">'+day+(ddSet[ds]?'<span class="dot"></span>':'')+'</div>';
+  }
+  var tail = (startCol+dim)%7;
+  if(tail!==0) for(var j=1;j<=7-tail;j++) html += '<div class="cal-cell dim">'+j+'</div>';
+  html += '</div>';
+  document.getElementById("col-cal").innerHTML = html + ddayHTML();
+}
+function ddayVal(dateStr0){
+  var t = parseDate(todayStr()), d = parseDate(dateStr0);
+  return Math.round((d-t)/86400000);
+}
+function ddayHTML(){
+  var list = S.ddys.slice().sort(function(a,b){ return a.date<b.date?-1:1; });
+  var html = '<div class="sec-head" style="margin-top:16px"><div class="sec-title">⏰ D-Day</div>'
+    + '<span class="q-count">'+S.ddys.length+'개</span></div><div class="dday-list">';
+  if(!list.length) html += '<div class="tt-empty">D-Day를 추가해 보세요!</div>';
+  list.forEach(function(dd){
+    var v = ddayVal(dd.date);
+    var badge, cls = "";
+    if(v===0){ badge="D-DAY"; cls="d0"; }
+    else if(v>0){ badge="D-"+v; }
+    else { badge="D+"+(-v); cls="past"; }
+    var dt = parseDate(dd.date);
+    html += '<div class="dday-item"><span class="ic">📌</span>'
+      + '<div class="t"><b>'+esc(dd.title)+'</b><span>'+(dt.getMonth()+1)+"월 "+dt.getDate()+"일 ("+DOW_KR[dt.getDay()]+')</span></div>'
+      + '<span class="dday-badge '+cls+'">'+badge+'</span>'
+      + '<button class="x-del" data-act="dday-del" data-id="'+dd.id+'" aria-label="삭제">✕</button></div>';
+  });
+  html += '</div>'
+    + '<div class="form-row"><input id="dday-title" type="text" placeholder="예: 가족 보드게임 밤" maxlength="40">'
+    + '<input id="dday-date" type="date" style="flex:0 0 140px">'
+    + '<button class="add-btn" data-act="dday-add">추가</button></div>';
+  return html;
+}
+
+/* ---------- 렌더링: 키드 카드 ---------- */
+function goalLabel(q){
+  return q.goal>=7 ? "매일" : "주 "+q.goal+"회";
+}
+function fmtT(t){
+  if(!t) return "";
+  var p=t.split(":"); return (+p[0])+":"+p[1];
+}
+function schedLine(it){
+  var t = fmtT(it.s) + (it.e ? " ~ "+fmtT(it.e) : "");
+  return {t:t, l:it.l};
+}
+function kidHeaderHTML(k){
+  var lv = levelForXp(k.xp), r = rankOf(lv);
+  var cur = k.xp - CUM[lv], need = xpNeeded(lv);
+  var next = lv<12 ? rankOf(lv+1) : null;
+  var dots = "";
+  for(var i=1;i<=12;i++) dots += '<span class="dex-dot'+(i<=k.maxLevel?" on":"")+'">'+rankOf(i).card+'</span>';
+  return '<div class="kid-top">'
+    + '<div class="kid-badge">'+badgeSVG(lv,56)+'</div>'
+    + '<div class="kid-id">'
+    + '<div class="kid-name-row"><span class="kid-name">'+esc(k.name)+'</span><span class="lvl-chip">Lv.'+lv+' · '+r.card+' '+r.name+'</span></div>'
+    + '<span class="kid-memo" data-act="memo-edit" data-id="'+k.id+'" title="눌러서 메모 수정">'+(k.memo? esc(k.memo) : "✎ 나이 · 학교 등 메모 추가")+'</span>'
+    + '</div></div>'
+    + '<div class="xp-row"><div class="xp-bar"><div class="xp-fill" style="width:'+Math.min(100,Math.round(cur/need*100))+'%"></div></div>'
+    + '<span class="xp-num">'+cur+'/'+need+' XP</span></div>'
+    + '<div class="dex-row"><span class="dex-label">계급 도감</span><span class="dex-dots">'+dots+'</span>'
+    + '<span class="dex-label">'+k.maxLevel+'/12</span></div>'
+    + (next ? '<div class="next-rank">다음 계급: <b>Lv.'+next.lv+' · '+next.card+' '+next.name+'</b> — '+(need-cur)+' XP 남았어요!</div>'
+            : '<div class="next-rank"><b>👑 최고 계급 달성!</b></div>');
+}
+function schedTodayHTML(k){
+  var di = dayIdxMon(), list = (k.sched[di]||[]).slice().sort(function(a,b){ return a.s<b.s?-1:1; });
+  var now = new Date(), curMin = now.getHours()*60+now.getMinutes();
+  var html = '<div class="sub-sec"><div class="sec-head"><div class="sec-title">📖 오늘의 일정 ('+DAYS[di]+')</div>'
+    + '<button class="mini-btn" data-act="tt-open" data-id="'+k.id+'">전체 시간표</button></div><div class="sched-list">';
+  if(!list.length) html += '<div class="sched-empty">오늘은 일정이 없어요! 자유예요 🎉</div>';
+  list.forEach(function(it){
+    var sl = schedLine(it);
+    var mm = it.s.split(":"), sm = (+mm[0])*60+(+mm[1]);
+    var em = sm + 90; /* 종료 시간 없는 일정은 90분간 '지금' 표시 */
+    if(it.e){ var me = it.e.split(":"); em = (+me[0])*60+(+me[1]); }
+    var nowCls = (curMin>=sm && curMin<em) ? " sched-now" : "";
+    html += '<div class="sched-item'+nowCls+'"><span class="tm">'+sl.t+'</span><span class="lb">'+esc(it.l)+'</span></div>';
+  });
+  html += '</div></div>';
+  return html;
+}
+function questRowHTML(k,q,isRest){
+  var lv = levelForXp(k.xp);
+  var wc = (q.week||[]).length;
+  var goalCls = wc>=q.goal ? " full" : "";
+  var set = ui.openSettings[q.id];
+  var chips = "";
+  for(var d=0; d<7; d++){
+    chips += '<button class="chip'+((q.days||[]).indexOf(d)>=0?" on":"")+'" data-act="q-day" data-kid="'+k.id+'" data-qid="'+q.id+'" data-day="'+d+'">'+DAYS[d]+'</button>';
+  }
+  var goalOpts = "";
+  for(var g=1; g<=7; g++) goalOpts += '<option value="'+g+'"'+(q.goal===g?" selected":"")+'>'+(g>=7?"매일":"주 "+g+"회")+'</option>';
+  var mainBtn = isRest
+    ? '<span class="q-check q-rest-ic" title="오늘은 쉬는 날">🛌</span>'
+    : '<button class="q-check" data-act="q-toggle" data-kid="'+k.id+'" data-qid="'+q.id+'" aria-label="완료">✓</button>';
+  return '<div class="q-item'+(q.done?" done":"")+(isRest?" rest":"")+'">'
+    + '<div class="q-main">'
+    + mainBtn
+    + '<span class="q-title">'+esc(q.title)+'</span>'
+    + '<span class="q-goal'+goalCls+'" title="이번 주 달성 횟수">'+goalLabel(q)+' · '+wc+'/'+q.goal+'</span>'
+    + '<span class="q-xp">+'+q.xp+'</span>'
+    + '<button class="q-set" data-act="q-set" data-kid="'+k.id+'" data-qid="'+q.id+'" title="요일·목표 설정">⚙</button>'
+    + '<button class="x-del" data-act="q-del" data-kid="'+k.id+'" data-qid="'+q.id+'" aria-label="삭제">✕</button>'
+    + '</div>'
+    + (set ? '<div class="q-settings"><div class="chips"><span class="cl">하는 요일</span>'+chips+'</div>'
+        + '<div class="chips"><span class="cl">주간 목표</span><select data-act="q-goal" data-kid="'+k.id+'" data-qid="'+q.id+'">'+goalOpts+'</select></div></div>' : '')
+    + '</div>';
+}
+function questHTML(k){
+  var act = activeQuests(k), rest = restQuests(k);
+  var done = act.filter(function(q){ return q.done; }).length;
+  var jokerGot = k.jokerDate === todayStr();
+  var html = '<div class="sub-sec">'
+    + '<div class="sec-head"><div class="sec-title">⭐ 오늘의 퀘스트</div>'
+    + '<span class="q-count">'+done+'/'+act.length+'</span>'
+    + '<span class="joker-chip'+(jokerGot?" got":"")+'" title="하루 퀘스트를 모두 클리어하면 +30 XP">'+(jokerGot?"🃏 조커 보너스 +30 지급":"🃏 올클리어 조커 보너스")+'</span>'
+    + '<button class="mini-btn" data-act="q-reset" data-kid="'+k.id+'">하루 초기화</button></div>'
+    + '<div class="q-list">';
+  if(!act.length && !rest.length) html += '<div class="tt-empty">퀘스트를 추가해 보세요!</div>';
+  act.forEach(function(q){ html += questRowHTML(k,q,false); });
+  rest.forEach(function(q){ html += questRowHTML(k,q,true); });
+  html += '</div>';
+  if(rest.length){
+    html += '<div class="q-rest">🛌 오늘 휴식(수업일): <b>'+rest.map(function(q){ return esc(q.title); }).join(", ")+'</b></div>';
+  }
+  if(!act.length && rest.length){
+    html += '<div class="tt-empty">오늘은 쉬는 날! 내일 다시 만나요 🎉</div>';
+  }
+  html += '<div class="form-row">'
+    + '<input id="q-title-'+k.id+'" type="text" placeholder="퀘스트 추가" maxlength="40" style="flex:2 1 90px">'
+    + '<select id="q-xp-'+k.id+'">'
+    + '<option value="10">+10</option><option value="15">+15</option><option value="20" selected>+20</option>'
+    + '<option value="30">+30</option><option value="50">+50</option></select>'
+    + '<select id="q-goal-'+k.id+'">'
+    + '<option value="7" selected>매일</option><option value="1">주 1회</option><option value="2">주 2회</option><option value="3">주 3회</option>'
+    + '<option value="4">주 4회</option><option value="5">주 5회</option><option value="6">주 6회</option></select>'
+    + '<button class="add-btn '+(k.id==="ajun"?"orange":"blue")+'" data-act="q-add" data-kid="'+k.id+'">+</button>'
+    + '</div></div>';
+  return html;
+}
+function renderKid(k){
+  var el = document.getElementById("card-"+k.id);
+  var inner = kidHeaderHTML(k) + schedTodayHTML(k) + questHTML(k);
+  el.innerHTML = inner;
+  var memo = el.querySelector('[data-act="memo-edit"]');
+  if(memo){
+    memo.addEventListener("click", function(){
+      if(memo.querySelector("input")) return;
+      var inp = document.createElement("input");
+      inp.type = "text"; inp.value = k.memo||""; inp.maxLength = 30;
+      inp.style.width = "100%"; inp.placeholder = "예: 8세 · 초등 1학년";
+      memo.textContent = ""; memo.appendChild(inp); inp.focus();
+      function done(){
+        k.memo = inp.value.trim(); save(); renderKid(k);
+      }
+      inp.addEventListener("blur", done);
+      inp.addEventListener("keydown", function(e){ if(e.key==="Enter") inp.blur(); });
+    });
+  }
+}
+
+/* ---------- 렌더링: 위시리스트 ---------- */
+function wishHTML(){
+  var html = '<div class="sec-head"><div class="sec-title">🛒 엄마 이거 사주세요</div>'
+    + '<span class="q-count">'+S.wish.length+'개</span></div>'
+    + '<div class="wish-guide">갖고 싶은 것, 필요한 것을 여기에 올려주세요 🛍️</div>'
+    + '<div class="form-row" style="flex-wrap:nowrap">'
+    + '<select id="wish-who" style="flex:0 0 72px"><option value="아준">아준</option><option value="서준">서준</option><option value="가족">가족</option></select>'
+    + '<input id="wish-title" type="text" placeholder="물건 이름" maxlength="40" style="flex:2 1 0; min-width:0">'
+    + '<input id="wish-memo" type="text" placeholder="메모 · 가격" maxlength="40" style="flex:1.4 1 0; min-width:0">'
+    + '<button class="add-btn pink" data-act="wish-add">+</button></div>'
+    + '<div class="wish-list">';
+  if(!S.wish.length) html += '<div class="wish-empty">아직 올라온 소원이 없어요 ✨</div>';
+  S.wish.forEach(function(w){
+    var whoCls = w.who==="아준" ? "ajun" : w.who==="서준" ? "seojun" : "family";
+    html += '<div class="wish-item'+(w.done?" done":"")+'">'
+      + '<button class="w-check" data-act="wish-toggle" data-id="'+w.id+'" aria-label="구매 완료">✓</button>'
+      + '<div class="w-body"><div class="w-title">'+esc(w.title)+'</div>'
+      + (w.memo ? '<div class="w-memo">'+esc(w.memo)+'</div>' : '') + '</div>'
+      + '<span class="w-who '+whoCls+'">'+esc(w.who)+'</span>'
+      + '<button class="x-del" data-act="wish-del" data-id="'+w.id+'" aria-label="삭제">✕</button></div>';
+  });
+  html += '</div>';
+  return html;
+}
+function renderWish(){ document.getElementById("col-wish").innerHTML = wishHTML(); }
+
+/* ---------- 렌더링: 계급표 모달 ---------- */
+function renderRankTable(){
+  var html = "";
+  for(var i=12; i>=1; i--){
+    var r = rankOf(i);
+    var cond = i===1 ? "시작 계급" : "누적 XP "+CUM[i]+" 이상";
+    html += '<div class="rank-row'+(i===12?" top":"")+'">'
+      + '<div style="flex:none">'+badgeSVG(i,44)+'</div>'
+      + '<div style="flex:1; min-width:0"><div class="rk-name"><small>Lv.'+r.lv+'</small>카드 '+r.card+' · '+r.name+'</div>'
+      + '<div class="rk-desc">'+r.desc+'</div></div>'
+      + '<span class="rank-cond">'+cond+'</span></div>';
+  }
+  document.getElementById("rank-table").innerHTML = html;
+}
+
+/* ---------- 렌더링: 전체 시간표 모달 ---------- */
+function renderTT(){
+  var k = S.kids.find(function(x){ return x.id===ui.ttKid; });
+  if(!k) return;
+  var tabs = "";
+  for(var d=0; d<7; d++){
+    tabs += '<button class="tt-tab'+(d===ui.ttDay?" on":"")+'" data-act="tt-tab" data-day="'+d+'">'+DAYS[d]+'</button>';
+  }
+  var list = (k.sched[ui.ttDay]||[]).slice().sort(function(a,b){ return a.s<b.s?-1:1; });
+  var rows = "";
+  if(!list.length) rows = '<div class="tt-empty">'+DAYS[ui.ttDay]+'요일은 일정이 없어요. 아래에서 추가해 보세요!</div>';
+  list.forEach(function(it){
+    var idAttr = it.id ? it.id : "";
+    rows += '<div class="tt-item"><span class="tm">'+fmtT(it.s)+(it.e?" ~ "+fmtT(it.e):"")+'</span>'
+      + '<span class="lb" contenteditable="true" data-edit-lb data-kid="'+k.id+'" data-day="'+ui.ttDay+'" data-tid="'+esc(idAttr)+'">'+esc(it.l)+'</span>'
+      + '<button class="x-del" data-act="tt-del" data-kid="'+k.id+'" data-day="'+ui.ttDay+'" data-tid="'+esc(idAttr)+'" aria-label="삭제">✕</button></div>';
+  });
+  document.getElementById("tt-card").innerHTML =
+    '<div class="modal-head"><h2>📖 '+esc(k.name)+' 전체 시간표</h2>'
+    + '<button class="modal-close" data-act="tt-close">✕</button></div>'
+    + '<div class="tt-tabs">'+tabs+'</div>'
+    + '<div class="tt-dayname">'+DAYS[ui.ttDay]+'요일 일정 <span style="font-weight:400;font-size:11px;color:var(--ink2)">(일정 이름을 눌러 수정할 수 있어요)</span></div>'
+    + '<div class="tt-list">'+rows+'</div>'
+    + '<div class="tt-add">'
+    + '<input type="time" id="tt-s" value="08:00"><input type="time" id="tt-e" value="">'
+    + '<input type="text" id="tt-l" placeholder="일정 이름 (예: 학원)" maxlength="30" style="flex:1; min-width:90px">'
+    + '<button class="add-btn" data-act="tt-add" data-kid="'+k.id+'">추가</button>'
+    + '</div>';
+  bindTTLabelEdits();
+}
+function bindTTLabelEdits(){
+  document.querySelectorAll("[data-edit-lb]").forEach(function(el){
+    el.addEventListener("blur", function(){
+      var k = S.kids.find(function(x){ return x.id===el.dataset.kid; });
+      if(!k) return;
+      var arr = k.sched[+el.dataset.day]||[];
+      var it = arr.find(function(x){ return x.id===el.dataset.tid; });
+      if(it){
+        var v = el.textContent.trim().slice(0,30);
+        if(v) it.l = v; save();
+      }
+    });
+    el.addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); el.blur(); } });
+  });
+}
+
+/* ---------- 렌더링: 대기화면 ---------- */
+function renderStandby(){
+  var sb = document.getElementById("standby");
+  if(sb.classList.contains("hidden")) return;
+  var d = new Date();
+  var html = '<div class="sb-clock">'+fmtClock(d)+'</div>'
+    + '<div class="sb-date">'+fmtDateKR(d)+'</div><div class="sb-kids">';
+  S.kids.forEach(function(k){
+    var lv = levelForXp(k.xp), r = rankOf(lv);
+    var act = activeQuests(k), done = act.filter(function(q){ return q.done; }).length;
+    var pct = act.length ? Math.round(done/act.length*100) : 0;
+    html += '<div class="sb-kid"><div class="nm">'+badgeSVG(lv,40)+esc(k.name)+'</div>'
+      + '<div class="rk">Lv.'+lv+' · '+r.card+' '+r.name+'</div>'
+      + '<div class="prb"><i style="width:'+pct+'%"></i></div>'
+      + '<div class="pr">오늘의 퀘스트 '+done+'/'+act.length+'</div></div>';
+  });
+  html += '</div><div class="sb-hint">화면을 누르면 대시보드로 돌아가요</div>';
+  sb.innerHTML = html;
+}
+
+/* ---------- 축하 효과 (렌더링 이후에 붙이도록 지연) ---------- */
+function celebrate(kidId, lv){
+  setTimeout(function(){
+    var card = document.getElementById("card-"+kidId);
+    if(!card) return;
+    var r = rankOf(lv);
+    var isMax = lv===12;
+    var banner = document.createElement("div");
+    banner.className = "rankup"+(isMax?" max":"");
+    banner.innerHTML = isMax
+      ? "👑🎉 위대한 달무티 달성! 👑🎉<br><span style='font-size:12px;font-weight:700'>"+esc(kidId==="ajun"?"아준":"서준")+"이가 왕국의 최고 통치자가 되었어요!</span>"
+      : "🎉 승급! Lv."+lv+" · "+r.card+" "+r.name;
+    card.appendChild(banner);
+    setTimeout(function(){ banner.remove(); }, 4200);
+    var conf = document.createElement("div");
+    conf.className = "confetti";
+    var n = isMax ? 34 : 18;
+    var chars = isMax ? ["👑","🃏","✨","🎊","💛"] : ["✨","🎊","🃏","⭐"];
+    for(var i=0;i<n;i++){
+      var sp = document.createElement("i");
+      sp.textContent = chars[Math.floor(Math.random()*chars.length)];
+      sp.style.left = (Math.random()*96)+"%";
+      sp.style.fontSize = (12+Math.random()*14)+"px";
+      sp.style.animationDuration = (1.8+Math.random()*1.8)+"s";
+      sp.style.animationDelay = (Math.random()*0.5)+"s";
+      conf.appendChild(sp);
+    }
+    card.appendChild(conf);
+    setTimeout(function(){ conf.remove(); }, 4600);
+  }, 60);
+}
+function jokerToast(kidId){
+  setTimeout(function(){
+    var card = document.getElementById("card-"+kidId);
+    if(!card) return;
+    var t = document.createElement("div");
+    t.className = "joker-toast";
+    t.textContent = "🃏 조커 보너스 +30 XP!";
+    card.appendChild(t);
+    setTimeout(function(){ t.remove(); }, 3400);
+  }, 60);
+}
+
+/* ---------- XP & 퀘스트 로직 ---------- */
+function addXp(k, delta){
+  var before = levelForXp(k.xp);
+  k.xp = Math.max(0, k.xp + delta);
+  var after = levelForXp(k.xp);
+  if(after > k.maxLevel) k.maxLevel = after;
+  if(after > before) celebrate(k.id, after);
+  return after > before;
+}
+function toggleQuest(k, q){
+  var t = todayStr();
+  if(q.done){
+    q.done = false; q.doneDate = null;
+    q.week = (q.week||[]).filter(function(d){ return d!==t; });
+    addXp(k, -q.xp);
+  }else{
+    q.done = true; q.doneDate = t;
+    if((q.week||[]).indexOf(t)<0) q.week.push(t);
+    addXp(k, q.xp);
+    var act = activeQuests(k);
+    if(act.length && act.every(function(x){ return x.done; }) && k.jokerDate !== t){
+      k.jokerDate = t;
+      addXp(k, 30);
+      jokerToast(k.id);
+    }
+  }
+  save(); renderKid(k); renderStandby();
+}
+function resetDay(k){
+  var t = todayStr();
+  k.quests.forEach(function(q){
+    if(q.done){
+      q.done = false; q.doneDate = null;
+      q.week = (q.week||[]).filter(function(d){ return d!==t; });
+    }
+  });
+  k.jokerDate = null;
+  save(); renderKid(k); renderStandby();
+}
+
+/* ---------- 이벤트 위임 ---------- */
+document.addEventListener("click", function(e){
+  var el = e.target.closest("[data-act]");
+  if(!el) return;
+  var act = el.dataset.act;
+  var kid = el.dataset.kid ? S.kids.find(function(x){ return x.id===el.dataset.kid; }) : null;
+
+  switch(act){
+    case "cal-prev": S.calM--; if(S.calM<0){S.calM=11;S.calY--;} save(); renderCal(); break;
+    case "cal-next": S.calM++; if(S.calM>11){S.calM=0;S.calY++;} save(); renderCal(); break;
+    case "cal-today": S.calY=new Date().getFullYear(); S.calM=new Date().getMonth(); save(); renderCal(); break;
+
+    case "dday-add": {
+      var tt = document.getElementById("dday-title"), td = document.getElementById("dday-date");
+      var title = tt.value.trim();
+      if(!title){ tt.focus(); return; }
+      if(!td.value){ td.focus(); return; }
+      S.ddys.push({id:uid(), title:title, date:td.value});
+      save(); renderCal(); break;
+    }
+    case "dday-del":
+      S.ddys = S.ddys.filter(function(d){ return d.id!==el.dataset.id; });
+      save(); renderCal(); break;
+
+    case "rank-open": renderRankTable(); document.getElementById("modal-rank").classList.remove("hidden"); break;
+    case "rank-close": document.getElementById("modal-rank").classList.add("hidden"); break;
+
+    case "tt-open":
+      ui.ttKid = el.dataset.id; ui.ttDay = dayIdxMon();
+      renderTT(); document.getElementById("modal-tt").classList.remove("hidden"); break;
+    case "tt-close": document.getElementById("modal-tt").classList.add("hidden"); break;
+    case "tt-tab": ui.ttDay = +el.dataset.day; renderTT(); break;
+    case "tt-add": {
+      var s = document.getElementById("tt-s").value || "00:00";
+      var ev = document.getElementById("tt-e").value || "";
+      var l = document.getElementById("tt-l").value.trim();
+      if(!l){ document.getElementById("tt-l").focus(); return; }
+      var arr = kid.sched[ui.ttDay] = kid.sched[ui.ttDay]||[];
+      arr.push({id:uid(), s:s, e:ev, l:l});
+      arr.sort(function(a,b){ return a.s<b.s?-1:1; });
+      save(); renderTT(); renderKid(kid); renderStandby(); break;
+    }
+    case "tt-del": {
+      var arr2 = kid.sched[+el.dataset.day] = kid.sched[+el.dataset.day]||[];
+      kid.sched[+el.dataset.day] = arr2.filter(function(x){ return x.id!==el.dataset.tid; });
+      save(); renderTT(); renderKid(kid); break;
+    }
+
+    case "standby-open": document.getElementById("standby").classList.remove("hidden"); renderStandby(); break;
+    case "standby-close": document.getElementById("standby").classList.add("hidden"); break;
+
+    case "q-toggle": {
+      var q = kid.quests.find(function(x){ return x.id===el.dataset.qid; });
+      if(q) toggleQuest(kid, q);
+      break;
+    }
+    case "q-del":
+      kid.quests = kid.quests.filter(function(x){ return x.id!==el.dataset.qid; });
+      save(); renderKid(kid); renderStandby(); break;
+    case "q-reset": resetDay(kid); break;
+    case "q-set": {
+      var qid = el.dataset.qid;
+      ui.openSettings[qid] = !ui.openSettings[qid];
+      renderKid(kid); break;
+    }
+    case "q-day": {
+      var qq = kid.quests.find(function(x){ return x.id===el.dataset.qid; });
+      if(!qq) return;
+      var dd = +el.dataset.day;
+      var ix = qq.days.indexOf(dd);
+      if(ix>=0){ if(qq.days.length>1) qq.days.splice(ix,1); }
+      else qq.days.push(dd);
+      qq.days.sort(function(a,b){ return a-b; });
+      save(); renderKid(kid); break;
+    }
+    case "q-add": {
+      var inp = document.getElementById("q-title-"+kid.id);
+      var xpSel = document.getElementById("q-xp-"+kid.id);
+      var goalSel = document.getElementById("q-goal-"+kid.id);
+      var v = inp.value.trim();
+      if(!v){ inp.focus(); return; }
+      kid.quests.push(Q(v, +xpSel.value, allDays(), +goalSel.value));
+      save(); renderKid(kid); break;
+    }
+
+    case "wish-add": {
+      var wt = document.getElementById("wish-title");
+      var v2 = wt.value.trim();
+      if(!v2){ wt.focus(); return; }
+      S.wish.push({id:uid(), title:v2, who:document.getElementById("wish-who").value,
+        memo:document.getElementById("wish-memo").value.trim(), done:false});
+      save(); renderWish(); break;
+    }
+    case "wish-toggle": {
+      var w = S.wish.find(function(x){ return x.id===el.dataset.id; });
+      if(w){ w.done = !w.done; save(); renderWish(); }
+      break;
+    }
+    case "wish-del":
+      S.wish = S.wish.filter(function(x){ return x.id!==el.dataset.id; });
+      save(); renderWish(); break;
+  }
+});
+/* select(주간 목표) 변경 이벤트 */
+document.addEventListener("change", function(e){
+  var el = e.target;
+  if(el.dataset && el.dataset.act === "q-goal"){
+    var k = S.kids.find(function(x){ return x.id===el.dataset.kid; });
+    var q = k && k.quests.find(function(x){ return x.id===el.dataset.qid; });
+    if(q){ q.goal = +el.value; save(); renderKid(k); }
+  }
+});
+/* 퀘스트 입력창에서 Enter */
+document.addEventListener("keydown", function(e){
+  if(e.key==="Enter" && e.target && e.target.id && e.target.id.indexOf("q-title-")===0){
+    var kidId = e.target.id.slice(8);
+    var btn = document.querySelector('[data-act="q-add"][data-kid="'+kidId+'"]');
+    if(btn) btn.click();
+  }
+  if(e.key==="Enter" && e.target && e.target.id==="dday-title"){
+    var b = document.querySelector('[data-act="dday-add"]');
+    if(b) b.click();
+  }
+  if(e.key==="Enter" && e.target && e.target.id==="wish-title"){
+    var b2 = document.querySelector('[data-act="wish-add"]');
+    if(b2) b2.click();
+  }
+  if(e.key==="Escape"){
+    document.getElementById("modal-rank").classList.add("hidden");
+    document.getElementById("modal-tt").classList.add("hidden");
+  }
+});
+
+/* ---------- 시계 틱: 날짜 바뀌면 하루 초기화 ---------- */
+function tick(){
+  renderClock();
+  var t = todayStr();
+  if(S.lastDate !== t){ normalizeDay(); renderAll(); }
+  renderStandby();
+}
+
+/* ---------- 초기화 ---------- */
+function renderAll(){
+  renderCal(); renderWish();
+  S.kids.forEach(renderKid);
+  renderStandby();
+}
+(function init(){
+  S = load();
+  if(!S){
+    S = defaultState();
+    S.ddys = sampleDdays();
+    save();
+  }
+  /* 기존 저장본과의 호환: 누락 필드 채우기 */
+  S.kids.forEach(function(k){
+    k.maxLevel = k.maxLevel || levelForXp(k.xp);
+    (k.quests||[]).forEach(function(q){ q.week = q.week||[]; q.days = q.days||allDays(); q.goal = q.goal||7; });
+    k.sched = k.sched || {};
+    for(var d=0; d<7; d++) k.sched[d] = k.sched[d]||[];
+  });
+  normalizeDay();
+  renderAll();
+  renderClock();
+  setInterval(tick, 1000);
+  document.addEventListener("visibilitychange", function(){ if(!document.hidden) tick(); });
+})();
+</script>
+</body>
+</html>
