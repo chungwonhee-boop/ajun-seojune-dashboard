@@ -194,22 +194,46 @@ main{
   background:#f1e8d2; color:#9a8b64; border:1px dashed #d5c8a8;
 }
 .joker-chip.got{background:#e9f6ee; color:var(--green); border:1px solid #bfe2cd}
+.joker-chip.off{background:#f7efe4; color:#a89a7d; border-color:#e4dac4}
 .q-list{display:flex; flex-direction:column; gap:6px; margin-top:9px}
 .q-item{border:1px solid var(--line); border-radius:11px; background:#fff; overflow:visible; position:relative}
 .q-item.done{background:#f3f6ef}
-.q-main{display:flex; align-items:center; gap:8px; padding:8px 8px 8px 10px}
+.q-main{display:flex; align-items:center; gap:7px; padding:8px 8px 8px 10px; flex-wrap:wrap}
 .q-check{
   width:22px; height:22px; border-radius:50%; border:2px solid #d5c8a8; flex:none;
   display:inline-flex; align-items:center; justify-content:center; font-size:12px; color:#fff; font-weight:900;
   transition:background .15s, border-color .15s;
 }
 .q-item.done .q-check{background:var(--green); border-color:var(--green)}
-.q-title{flex:1; min-width:0; font-size:13px; font-weight:600; cursor:default}
+.q-title{flex:1 1 88px; min-width:0; font-size:13px; font-weight:600; cursor:default}
 .q-item.done .q-title{color:#a9a08a; text-decoration:line-through}
 .q-xp{font-size:11px; font-weight:800; color:var(--gold); white-space:nowrap}
 .q-goal{font-size:10.5px; font-weight:700; color:var(--ink2); background:#f5efdf; border-radius:999px; padding:2px 8px; white-space:nowrap; font-variant-numeric:tabular-nums}
 .q-goal.full{background:#e9f6ee; color:var(--green)}
 .q-item.rest{background:#faf7ef; border-style:dashed; opacity:.75}
+/* 미완료(−절반 감점) 상태 */
+.q-item.miss{background:#fdf2ec; border-color:#ecc7b6}
+.q-item.miss .q-title{color:#a8694e}
+.q-item.miss .q-goal{background:#f6e3d9; color:#a8694e}
+.q-item.miss .q-check{border-color:#e0b7a3}
+.q-item.miss .q-xp{color:#c08a74; text-decoration:line-through}
+.q-miss{
+  font-size:11px; font-weight:800; color:#a05a3e; background:#fdf4ee;
+  border:1px solid #eccbba; border-radius:999px; padding:2px 8px; flex:none;
+  font-variant-numeric:tabular-nums; line-height:1.45; white-space:nowrap;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.q-miss:hover{background:#f8e2d6; border-color:#dca98e; color:#8b4429}
+.q-item.miss .q-miss{background:#c4603c; border-color:#c4603c; color:#fff}
+.q-miss-note{font-size:11px; font-weight:800; color:#b4522f; padding:0 10px 7px 39px; font-variant-numeric:tabular-nums}
+.today-net{
+  font-size:11.5px; font-weight:800; border-radius:999px; padding:2.5px 9px;
+  font-variant-numeric:tabular-nums; white-space:nowrap;
+}
+.today-net.pos{color:#2f7d4d; background:#e9f6ee; border:1px solid #c4e4d1}
+.today-net.neg{color:#b4462f; background:#fbe7df; border:1px solid #f0cdbe}
+.today-net.zero{color:#8a7f6a; background:#f2ece0; border:1px solid #e4dac4}
+.miss-chip{font-size:10.5px; font-weight:800; color:#b4462f; background:#fbe7df; border-radius:999px; padding:2px 8px; white-space:nowrap}
 .q-rest-ic{display:inline-flex; align-items:center; justify-content:center; font-size:13px; width:22px; height:22px; flex:none}
 .q-set{width:22px;height:22px;border-radius:6px;color:#c2b698;font-size:12px;display:inline-flex;align-items:center;justify-content:center;flex:none}
 .q-set:hover{background:#f5efdf; color:var(--ink)}
@@ -656,8 +680,10 @@ function normalizeDay(){
     S.kids.forEach(function(k){
       k.quests.forEach(function(q){
         if(q.doneDate !== t){ q.done = false; q.doneDate = null; }
+        q.doneAmt = q.done ? (q.doneAmt || q.xp) : 0;
+        if(q.missDate !== t){ q.missDate = null; q.missAmt = 0; }
       });
-      if(k.jokerDate !== t) k.jokerDate = null;
+      if(k.jokerDate !== t){ k.jokerDate = null; k.jokerAmt = 0; }
     });
     S.lastDate = t;
     save();
@@ -830,15 +856,26 @@ function questRowHTML(k,q,isRest){
   var mainBtn = isRest
     ? '<span class="q-check q-rest-ic" title="오늘은 쉬는 날">🛌</span>'
     : '<button class="q-check" data-act="q-toggle" data-kid="'+k.id+'" data-qid="'+q.id+'" aria-label="완료">✓</button>';
-  return '<div class="q-item'+(q.done?" done":"")+(isRest?" rest":"")+'">'
+  var missed = !isRest && q.missDate === todayStr();
+  var ma = missAmount(q);
+  var missBtn = isRest ? ''
+    : '<button class="q-miss" data-act="q-miss" data-kid="'+k.id+'" data-qid="'+q.id+'"'
+      + ' title="'+(missed ? "미완료 취소 — 감점 "+(q.missAmt||0)+" XP 복구" : "오늘 안 했어요 — "+ma+" XP 감점")+'"'
+      + ' aria-label="미완료 '+ma+' XP 감점">−'+ma+'</button>';
+  var missNote = missed
+    ? '<div class="q-miss-note">미완료 −'+((q.missAmt==null)?ma:q.missAmt)+' XP'+(((q.missAmt||0)<ma)?' (남은 XP만큼)':'')+'</div>'
+    : '';
+  return '<div class="q-item'+(q.done?" done":"")+(missed?" miss":"")+(isRest?" rest":"")+'">'
     + '<div class="q-main">'
     + mainBtn
     + '<span class="q-title">'+esc(q.title)+'</span>'
     + '<span class="q-goal'+goalCls+'" title="이번 주 달성 횟수">'+goalLabel(q)+' · '+wc+'/'+q.goal+'</span>'
     + '<span class="q-xp">+'+q.xp+'</span>'
+    + missBtn
     + '<button class="q-set" data-act="q-set" data-kid="'+k.id+'" data-qid="'+q.id+'" title="요일·목표 설정">⚙</button>'
     + '<button class="x-del" data-act="q-del" data-kid="'+k.id+'" data-qid="'+q.id+'" aria-label="삭제">✕</button>'
     + '</div>'
+    + missNote
     + (set ? '<div class="q-settings"><div class="chips"><span class="cl">하는 요일</span>'+chips+'</div>'
         + '<div class="chips"><span class="cl">주간 목표</span><select data-act="q-goal" data-kid="'+k.id+'" data-qid="'+q.id+'">'+goalOpts+'</select></div></div>' : '')
     + '</div>';
@@ -846,11 +883,18 @@ function questRowHTML(k,q,isRest){
 function questHTML(k){
   var act = activeQuests(k), rest = restQuests(k);
   var done = act.filter(function(q){ return q.done; }).length;
+  var missN = missedToday(k).length;
   var jokerGot = k.jokerDate === todayStr();
+  var net = todayNetLabel(k);
+  var jokerCls = jokerGot ? " got" : (missN ? " off" : "");
+  var jokerTxt = jokerGot ? "🃏 조커 보너스 +30 지급"
+    : (missN ? "🃏 미완료가 있어 조커 보너스 없음" : "🃏 올클리어 조커 보너스");
   var html = '<div class="sub-sec">'
     + '<div class="sec-head"><div class="sec-title">⭐ 오늘의 퀘스트</div>'
     + '<span class="q-count">'+done+'/'+act.length+'</span>'
-    + '<span class="joker-chip'+(jokerGot?" got":"")+'" title="하루 퀘스트를 모두 클리어하면 +30 XP">'+(jokerGot?"🃏 조커 보너스 +30 지급":"🃏 올클리어 조커 보너스")+'</span>'
+    + '<span class="today-net '+net.cls+'" title="오늘 체크한 퀘스트(+)와 미완료 감점(−)을 합친 오늘 순점수예요">'+net.txt+'</span>'
+    + (missN ? '<span class="miss-chip">미완료 '+missN+'</span>' : '')
+    + '<span class="joker-chip'+jokerCls+'" title="하루 퀘스트를 모두 클리어하면 +30 XP (미완료가 있으면 없어요)">'+jokerTxt+'</span>'
     + '<button class="mini-btn" data-act="q-reset" data-kid="'+k.id+'">하루 초기화</button></div>'
     + '<div class="q-list">';
   if(!act.length && !rest.length) html += '<div class="tt-empty">퀘스트를 추가해 보세요!</div>';
@@ -1061,22 +1105,97 @@ function addXp(k, delta){
   if(after > before) celebrate(k.id, after);
   return after > before;
 }
+/* 감점: 0 밑으로 내려가지 않는 선에서 실제로 깎인 XP를 돌려줌 */
+function deductXp(k, amt){
+  if(!amt || amt <= 0) return 0;
+  var before = k.xp;
+  k.xp = Math.max(0, k.xp - amt);
+  return before - k.xp;
+}
+/* 미완료 감점액 = 퀘스트 XP의 절반 (10→5, 15→8, 5→3) */
+function missAmount(q){ return Math.round((q.xp||0)/2); }
+function missedToday(k){
+  var t = todayStr();
+  return activeQuests(k).filter(function(q){ return q.missDate === t; });
+}
+/* 오늘 순점수 = 오늘 체크(+) − 오늘 미완료 감점(−) (+ 오늘 조커 보너스) */
+function todayNet(k){
+  var t = todayStr(), net = 0;
+  (k.quests||[]).forEach(function(q){
+    if(q.done && q.doneDate === t) net += (q.doneAmt==null ? q.xp : q.doneAmt);
+    if(q.missDate === t) net -= (q.missAmt || 0);
+  });
+  if(k.jokerDate === t) net += (k.jokerAmt==null ? 30 : k.jokerAmt);
+  return net;
+}
+function todayNetLabel(k){
+  var n = todayNet(k);
+  return { n:n, cls:(n>0?"pos":n<0?"neg":"zero"),
+    txt:(n>0 ? "오늘 +"+won(n)+" XP" : n<0 ? "오늘 −"+won(-n)+" XP" : "오늘 0 XP") };
+}
+function grantJoker(k){
+  var t = todayStr();
+  if(k.jokerDate === t) return false;
+  k.jokerDate = t; k.jokerAmt = 30;
+  addXp(k, 30);
+  jokerToast(k.id);
+  return true;
+}
+function revokeJoker(k){
+  var t = todayStr();
+  if(k.jokerDate !== t) return 0;
+  var back = deductXp(k, (k.jokerAmt==null ? 30 : k.jokerAmt));
+  k.jokerDate = null; k.jokerAmt = 0;
+  return back;
+}
+/* 올클리어(미완료 없음)일 때만 조커 +30 */
+function maybeJoker(k){
+  var t = todayStr();
+  if(k.jokerDate === t) return false;
+  var act = activeQuests(k);
+  if(!act.length) return false;
+  if(!act.every(function(x){ return x.done; })) return false;
+  if(missedToday(k).length) return false;
+  return grantJoker(k);
+}
 function toggleQuest(k, q){
   var t = todayStr();
   if(q.done){
     q.done = false; q.doneDate = null;
     q.week = (q.week||[]).filter(function(d){ return d!==t; });
-    addXp(k, -q.xp);
+    deductXp(k, q.doneAmt==null ? q.xp : q.doneAmt);
+    q.doneAmt = 0;
+    revokeJoker(k); /* 더 이상 올클리어가 아니면 조커 보너스도 회수 */
   }else{
+    if(q.missDate === t){ /* 미완료 → 완료: 감점했던 만큼 되돌리고 XP 적립 */
+      if(q.missAmt) addXp(k, q.missAmt);
+      q.missDate = null; q.missAmt = 0;
+    }
     q.done = true; q.doneDate = t;
     if((q.week||[]).indexOf(t)<0) q.week.push(t);
     addXp(k, q.xp);
-    var act = activeQuests(k);
-    if(act.length && act.every(function(x){ return x.done; }) && k.jokerDate !== t){
-      k.jokerDate = t;
-      addXp(k, 30);
-      jokerToast(k.id);
+    q.doneAmt = q.xp;
+    maybeJoker(k);
+  }
+  save(); renderKid(k); renderStandby();
+}
+/* 미완료(−) 버튼: 누르면 절반 감점, 다시 누르면 깎였던 만큼 정확히 복구 */
+function missQuest(k, q){
+  var t = todayStr();
+  if(q.missDate === t){
+    if(q.missAmt) addXp(k, q.missAmt);
+    q.missDate = null; q.missAmt = 0;
+    maybeJoker(k);
+  }else{
+    if(q.done){ /* 완료와 미완료는 배타적 — 완료 해제 후 감점 */
+      q.done = false; q.doneDate = null;
+      q.week = (q.week||[]).filter(function(d){ return d!==t; });
+      deductXp(k, q.doneAmt==null ? q.xp : q.doneAmt);
+      q.doneAmt = 0;
     }
+    q.missAmt = deductXp(k, missAmount(q)); /* 실제로 깎인 XP 기록(하한 0) */
+    q.missDate = t;
+    revokeJoker(k); /* 미완료가 하나라도 있으면 조커 보너스 없음 */
   }
   save(); renderKid(k); renderStandby();
 }
@@ -1087,8 +1206,10 @@ function resetDay(k){
       q.done = false; q.doneDate = null;
       q.week = (q.week||[]).filter(function(d){ return d!==t; });
     }
+    q.doneAmt = 0;
+    if(q.missDate === t){ q.missDate = null; q.missAmt = 0; }
   });
-  k.jokerDate = null;
+  k.jokerDate = null; k.jokerAmt = 0;
   save(); renderKid(k); renderStandby();
 }
 
@@ -1146,6 +1267,11 @@ document.addEventListener("click", function(e){
     case "q-toggle": {
       var q = kid.quests.find(function(x){ return x.id===el.dataset.qid; });
       if(q) toggleQuest(kid, q);
+      break;
+    }
+    case "q-miss": {
+      var qm = kid.quests.find(function(x){ return x.id===el.dataset.qid; });
+      if(qm) missQuest(kid, qm);
       break;
     }
     case "q-del":
@@ -1252,7 +1378,14 @@ function renderAll(){
   /* 기존 저장본과의 호환: 누락 필드 채우기 */
   S.kids.forEach(function(k){
     k.maxLevel = k.maxLevel || levelForXp(k.xp);
-    (k.quests||[]).forEach(function(q){ q.week = q.week||[]; q.days = q.days||allDays(); q.goal = q.goal||7; });
+    if(k.jokerDate === todayStr()){ if(k.jokerAmt==null) k.jokerAmt = 30; }
+    else { k.jokerAmt = k.jokerAmt || 0; }
+    (k.quests||[]).forEach(function(q){
+      q.week = q.week||[]; q.days = q.days||allDays(); q.goal = q.goal||7;
+      if(q.missDate === undefined) q.missDate = null;
+      if(q.missAmt === undefined) q.missAmt = 0;
+      if(q.doneAmt === undefined) q.doneAmt = (q.done && q.doneDate===todayStr()) ? q.xp : 0;
+    });
     k.sched = k.sched || {};
     for(var d=0; d<7; d++) k.sched[d] = k.sched[d]||[];
   });
