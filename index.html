@@ -453,7 +453,7 @@ footer{max-width:1560px; margin:0 auto; padding:6px 20px 26px; font-size:11px; c
    ================================================================ */
 
 var LS_KEY = "ajunSeojunFamilyDashboard.v1";
-var SCHEMA_VERSION = 2; /* v2: 승급 페이스 재설계(하루 올클리어 ≈ 100 XP) + 아준·서준 퀘스트 균형 */
+var SCHEMA_VERSION = 3; /* v3: 구몬 숙제에서 구몬 수업일(화) 제외 — 아준 주6·서준 주5 */
 /* v1 기본 퀘스트 제목 — 이 목록 그대로면 사용자가 손대지 않은 기본값으로 보고 v2로 교체 */
 var V1_QUEST_TITLES = {
   ajun: ["아침 스트레칭 (8:00)","아침 리프팅 (8:20)","학교 책가방 챙기기","학교 숙제 / 알림장 확인","방 정리 5분"],
@@ -630,7 +630,7 @@ function defaultState(){
           Q("매일 줄넘기",15,allDays(),7),
           Q("학교 숙제",15,[0,1,2,3,4],5),              /* 월~금 주5 */
           Q("수학 숙제",15,allDays(),7),
-          Q("구몬 숙제",15,allDays(),7),
+          Q("구몬 숙제",15,daysExcept([1]),6),           /* 화요일 = 구몬 선생님 오시는 날(19:10~19:30) 제외 */
           Q("한자 숙제",10,[4],1),                      /* 주1회 */
           Q("딥독 숙제",5,[3],1),                       /* 주1회 · 목요일 */
           Q("주말 운동 (축구·자전거)",25,[5,6],2)
@@ -652,7 +652,7 @@ function defaultState(){
           Q("학교 숙제",10,[0,1,2,3,4],5),
           Q("학교 책가방 싸기",10,[0,1,2,3,4],5),
           Q("수학 숙제",15,[1,2,3,4,5,6],6),            /* 월요일 = 수학과외 날 */
-          Q("구몬 숙제",15,[0,1,2,3,4],5),              /* 화요일 = 구몬 국어 날 */
+          Q("구몬 숙제",15,[0,2,3,4,5],5),              /* 화요일 = 구몬 국어 날(19:00) 제외, 주5 유지 */
           Q("한자 숙제",10,[1,2,3,5],4),                /* 월요일 = 한자과외 날 */
           Q("영어학원 숙제",15,[0,6],2),                /* 화·수 = 영어학원 날 */
           Q("딥독 숙제",15,[5,6],2),
@@ -692,10 +692,16 @@ function save(){
   try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){}
 }
 
-/* ---------- 버전 마이그레이션 (v1 → v2) ----------
+/* ---------- 버전 마이그레이션 (v1 → v2 → v3) ----------
    이전에 저장된 데이터가 남아 있어도 새 퀘스트 기본값·새 계급 기준이 적용되도록 함.
-   XP·계급 도감·시간표·D-Day·위시리스트·메모는 그대로 유지하고,
-   퀘스트 목록만 “v1 기본값 그대로”인 경우에만 v2 균형 퀘스트로 교체. */
+   XP·계급 도감·시간표·D-Day·위시리스트·메모·완료 기록은 그대로 유지하고,
+   퀘스트 목록만 “v1 기본값 그대로”인 경우에만 새 기본 퀘스트로 교체.
+   v2 → v3: 구몬 숙제의 하는 요일·주간 목표만 갱신(화요일 제외). 나머지 항목은 손대지 않음. */
+var V2_GUMON_DAYS = { ajun:[0,1,2,3,4,5,6], seojun:[0,1,2,3,4] }; /* v2까지의 구몬 숙제 기본 요일 */
+function sameDays(a,b){
+  a=(a||[]).slice().sort(function(x,y){return x-y;}); b=(b||[]).slice().sort(function(x,y){return x-y;});
+  return a.length===b.length && a.every(function(v,i){ return v===b[i]; });
+}
 function migrate(st){
   var from = st.v || 1;
   if(from >= SCHEMA_VERSION){ st.v = SCHEMA_VERSION; return st; }
@@ -706,7 +712,26 @@ function migrate(st){
     var titles = (k.quests||[]).map(function(q){ return q.title; });
     var v1 = V1_QUEST_TITLES[k.id] || [];
     var untouched = titles.length>0 && titles.every(function(t){ return v1.indexOf(t)>=0; });
-    if(untouched) k.quests = def.quests;
+    if(from < 2){
+      /* v1 저장본: 퀘스트를 손대지 않았을 때만 v2·v3 기본 퀘스트로 교체 */
+      if(untouched) k.quests = def.quests;
+      return;
+    }
+    if(from < 3){
+      var gq = def.quests.filter(function(x){ return x.title === "구몬 숙제"; })[0];
+      if(!gq) return;
+      (k.quests||[]).forEach(function(q){
+        if(q.title !== "구몬 숙제") return;
+        if(sameDays(q.days, V2_GUMON_DAYS[k.id])){
+          /* 기본값 그대로였으면 새 기본값(화요일 제외·주간 목표)으로 교체 */
+          q.days = gq.days.slice(); q.goal = gq.goal;
+        }else{
+          /* ⚙로 직접 고친 요일이면 사용자가 정한 요일은 살리고 화요일만 제외 */
+          q.days = (q.days||allDays()).filter(function(d){ return d !== 1; });
+          if(q.goal > q.days.length) q.goal = q.days.length || 1;
+        }
+      });
+    }
   });
   st.v = SCHEMA_VERSION;
   return st;
