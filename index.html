@@ -104,13 +104,46 @@ main{
 .cal-dow{font-size:11px; color:var(--ink2); padding:4px 0; font-weight:700}
 .cal-dow.sun{color:var(--red)} .cal-dow.sat{color:#4f76a0}
 .cal-cell{
-  position:relative; font-size:12.5px; padding:6px 0 9px; border-radius:8px; min-height:34px;
+  position:relative; font-size:12.5px; padding:6px 0 13px; border-radius:8px; min-height:40px;
   font-variant-numeric:tabular-nums;
 }
-.cal-cell.dim{color:#c9bfa8}
+.cal-cell:not(.dim){cursor:pointer}
+.cal-cell:not(.dim):hover{background:#f5eeda}
+.cal-cell.dim{color:#c9bfa8; cursor:pointer}
+.cal-cell.dim:hover{background:#f7f2e4}
 .cal-cell.sun{color:var(--red)} .cal-cell.sat{color:#4f76a0}
 .cal-cell.today{background:#f7edd3; font-weight:800; box-shadow:inset 0 0 0 1.5px var(--gold)}
-.cal-cell .dot{position:absolute; left:50%; transform:translateX(-50%); bottom:2px; width:5px; height:5px; border-radius:50%; background:var(--accent)}
+.cal-cell.sel{background:var(--cal-soft); font-weight:800; outline:2.5px solid var(--cal); outline-offset:-2px}
+.cal-cell.today.sel{background:linear-gradient(180deg,#f7edd3,#e9f2e2)}
+.cal-dots{position:absolute; left:0; right:0; bottom:3px; display:flex; gap:2.5px; justify-content:center; align-items:center; pointer-events:none}
+.cal-dots i{display:block; width:5px; height:5px; border-radius:50%; background:var(--accent)}
+.cal-dots i.fam{background:var(--cal)} .cal-dots i.ajun{background:var(--ajun)} .cal-dots i.seojun{background:var(--seojun)}
+
+/* ===== 선택한 날짜 일정 패널 ===== */
+.day-panel{margin-top:11px; border:1.5px solid #c7dbbe; border-radius:13px; background:var(--cal-soft); padding:10px 11px}
+.dp-head{display:flex; align-items:center; justify-content:space-between; gap:8px}
+.dp-title{font-size:13.5px; font-weight:800; color:#4d6b45; display:flex; align-items:center; gap:6px; flex-wrap:wrap}
+.dp-today{font-size:10px; font-weight:800; color:#fff; background:var(--cal); border-radius:999px; padding:2px 7px}
+.dp-list{display:flex; flex-direction:column; gap:5px; margin-top:8px}
+.dp-item{display:flex; align-items:center; gap:7px; background:#fff; border:1px solid #d7e3cf; border-radius:10px; padding:6px 8px}
+.dp-item .tm{font-size:11.5px; font-weight:800; color:#5d7a52; font-variant-numeric:tabular-nums; white-space:nowrap; flex:none}
+.dp-item .tm.all{color:#9aa98f}
+.dp-item .lb{flex:1; min-width:0; font-size:12.5px; font-weight:600; word-break:break-all}
+.who-b{font-size:10px; font-weight:800; color:#fff; border-radius:999px; padding:2px 7px; flex:none}
+.who-b.ajun{background:var(--ajun)} .who-b.seojun{background:var(--seojun)} .who-b.fam{background:var(--cal)}
+.dp-empty{font-size:11.5px; color:#8ba07e; padding:6px 2px}
+.dp-dday{font-size:11.5px; font-weight:800; color:#a3402f; background:#fdeeea; border:1px dashed #e6bdb1; border-radius:9px; padding:5px 9px; margin-top:7px; display:flex; gap:5px}
+.dp-form{margin-top:9px; align-items:center}
+.dp-form select{flex:0 0 74px}
+.dp-form input[type="time"]{flex:0 0 106px; min-width:0}
+.dp-form input[type="text"]{flex:1 1 96px; min-width:0}
+@media (max-width:740px){
+  .form-row.dp-form{display:grid; grid-template-columns:70px 100px auto; gap:6px; align-items:center}
+  .dp-form #ev-who{grid-area:1/1/2/2; width:100%}
+  .dp-form #ev-time{grid-area:1/2/2/3; width:100%}
+  .dp-form .add-btn{grid-area:1/3/2/4; justify-self:start}
+  .dp-form #ev-title{grid-area:2/1/3/4; width:100%}
+}
 
 /* ===== dday ===== */
 .dday-list{display:flex; flex-direction:column; gap:7px; margin-top:6px}
@@ -183,8 +216,14 @@ main{
 .sched-item .tm{font-weight:800; color:var(--ink2); font-variant-numeric:tabular-nums; white-space:nowrap; font-size:11.5px}
 .k-ajun .sched-item .tm{color:var(--ajun)} .k-seojun .sched-item .tm{color:var(--seojun)}
 .sched-item .lb{flex:1}
+.sched-item .tm.all{color:#9aa98f; font-weight:700}
 .sched-empty{font-size:12px; color:var(--ink2); padding:6px 2px}
 .sched-now{box-shadow:inset 0 0 0 1.5px var(--gold); background:#fdf6e0}
+.sched-item.sp{background:#f2f7ec; box-shadow:inset 0 0 0 1px #dae7d0}
+.sched-item.dday{background:#fdf1ec; box-shadow:inset 0 0 0 1px #f0cfc4}
+.sched-badge{font-size:9.5px; font-weight:800; border-radius:999px; padding:2px 6px; flex:none; white-space:nowrap; letter-spacing:-.2px}
+.sched-badge.ev{color:#3f6b34; background:#dcecd2}
+.sched-badge.dd{color:#a3402f; background:#fbdcd3}
 
 /* quests */
 .q-head{display:flex; align-items:center; gap:7px; flex-wrap:wrap}
@@ -685,6 +724,7 @@ function normalizeDay(){
       });
       if(k.jokerDate !== t){ k.jokerDate = null; k.jokerAmt = 0; }
     });
+    if(S.selDate === S.lastDate) S.selDate = t;
     S.lastDate = t;
     save();
   }
@@ -728,6 +768,18 @@ function renderClock(){
 }
 
 /* ---------- 렌더링: 달력 & D-Day ---------- */
+function whoClass(who){ return who==="아준" ? "ajun" : who==="서준" ? "seojun" : "fam"; }
+function eventsOn(ds){ return (S.events||[]).filter(function(ev){ return ev.date===ds; }); }
+function eventsFor(ds, kid){
+  return (S.events||[]).filter(function(ev){
+    return ev.date===ds && (!kid || ev.who==="가족" || ev.who===kid.name);
+  });
+}
+function ddaysOn(ds){ return (S.ddys||[]).filter(function(dd){ return dd.date===ds; }); }
+function fmtDayKR(ds){
+  var d = parseDate(ds);
+  return (d.getMonth()+1)+"월 "+d.getDate()+"일 ("+DOW_KR[d.getDay()]+")";
+}
 function renderCal(){
   var y = S.calY, m = S.calM;
   var first = new Date(y, m, 1);
@@ -735,8 +787,27 @@ function renderCal(){
   var dim = new Date(y, m+1, 0).getDate();
   var dimPrev = new Date(y, m, 0).getDate();
   var tstr = todayStr();
+  var sel = S.selDate || tstr;
   var ddSet = {};
   S.ddys.forEach(function(dd){ ddSet[dd.date] = true; });
+  var evSet = {};
+  (S.events||[]).forEach(function(ev){ (evSet[ev.date] = evSet[ev.date]||{})[ev.who] = true; });
+  function cell(d, label, isDim){
+    var ds = dateStr(d), col = d.getDay(), cls = "cal-cell" + (isDim ? " dim" : "");
+    if(col===0) cls += " sun"; if(col===6) cls += " sat";
+    if(ds===tstr) cls += " today";
+    if(ds===sel) cls += " sel";
+    var dots = "";
+    var w = evSet[ds];
+    if(w){
+      if(w["가족"]) dots += '<i class="fam"></i>';
+      if(w["아준"]) dots += '<i class="ajun"></i>';
+      if(w["서준"]) dots += '<i class="seojun"></i>';
+    }
+    if(ddSet[ds]) dots += '<i class="dd"></i>';
+    return '<div class="'+cls+'" data-act="cal-select" data-date="'+ds+'" role="button" tabindex="0" aria-label="'+esc(fmtDayKR(ds))+' 선택">'
+      + label + (dots?'<span class="cal-dots">'+dots+'</span>':'') + '</div>';
+  }
 
   var html = '<div class="sec-head"><div class="sec-title">🗓️ 월간 달력</div></div>'
     + '<div class="cal-head">'
@@ -750,18 +821,75 @@ function renderCal(){
   dows.forEach(function(dn,i){
     html += '<div class="cal-dow'+(i===0?" sun":i===6?" sat":"")+'">'+dn+'</div>';
   });
-  for(var i=0;i<startCol;i++) html += '<div class="cal-cell dim">'+(dimPrev-startCol+1+i)+'</div>';
+  for(var i=0;i<startCol;i++){
+    var pd = new Date(y, m-1, dimPrev-startCol+1+i);
+    html += cell(pd, dimPrev-startCol+1+i, true);
+  }
   for(var day=1; day<=dim; day++){
-    var d = new Date(y,m,day), ds = dateStr(d), col = d.getDay();
-    var cls = "cal-cell";
-    if(col===0) cls += " sun"; if(col===6) cls += " sat";
-    if(ds===tstr) cls += " today";
-    html += '<div class="'+cls+'">'+day+(ddSet[ds]?'<span class="dot"></span>':'')+'</div>';
+    html += cell(new Date(y,m,day), day);
   }
   var tail = (startCol+dim)%7;
-  if(tail!==0) for(var j=1;j<=7-tail;j++) html += '<div class="cal-cell dim">'+j+'</div>';
+  if(tail!==0){
+    for(var j=1;j<=7-tail;j++){
+      var nd = new Date(y, m+1, j);
+      var nds = dateStr(nd), ncol = nd.getDay(), ncls = "cal-cell dim";
+      if(ncol===0) ncls += " sun"; if(ncol===6) ncls += " sat";
+      if(nds===tstr) ncls += " today";
+      if(nds===sel) ncls += " sel";
+      var ndots = "";
+      var nw = evSet[nds];
+      if(nw){
+        if(nw["가족"]) ndots += '<i class="fam"></i>';
+        if(nw["아준"]) ndots += '<i class="ajun"></i>';
+        if(nw["서준"]) ndots += '<i class="seojun"></i>';
+      }
+      if(ddSet[nds]) ndots += '<i class="dd"></i>';
+      html += '<div class="'+ncls+'" data-act="cal-select" data-date="'+nds+'" role="button" tabindex="0">'+j
+        + (ndots?'<span class="cal-dots">'+ndots+'</span>':'') + '</div>';
+    }
+  }
   html += '</div>';
-  document.getElementById("col-cal").innerHTML = html + ddayHTML();
+  document.getElementById("col-cal").innerHTML = html + dayPanelHTML() + ddayHTML();
+}
+/* 선택한 날짜의 특별 일정 패널 (달력 바로 아래) */
+function dayPanelHTML(){
+  var ds = S.selDate || todayStr();
+  var isToday = ds===todayStr();
+  var list = eventsOn(ds).sort(function(a,b){
+    if(a.time===b.time) return 0;
+    if(!a.time) return -1;
+    if(!b.time) return 1;
+    return a.time<b.time ? -1 : 1;
+  });
+  var dds = ddaysOn(ds);
+  var who0 = S.evWho || "가족";
+  var opts = "";
+  ["가족","아준","서준"].forEach(function(w){
+    opts += '<option value="'+w+'"'+(who0===w?" selected":"")+'>'+w+'</option>';
+  });
+  var html = '<div class="day-panel">'
+    + '<div class="dp-head"><div class="dp-title">📅 '+esc(fmtDayKR(ds))+' 일정'
+    + (isToday?'<span class="dp-today">오늘</span>':'') + '</div>'
+    + '<span class="q-count">'+list.length+'개</span></div>'
+    + '<div class="dp-list">';
+  if(!list.length) html += '<div class="dp-empty">이 날은 등록된 특별 일정이 없어요 — 아래에서 추가해 보세요</div>';
+  list.forEach(function(ev){
+    html += '<div class="dp-item"><span class="tm'+(ev.time?"":" all")+'">'+(ev.time? fmtT(ev.time) : "종일")+'</span>'
+      + '<span class="who-b '+whoClass(ev.who)+'">'+esc(ev.who||"가족")+'</span>'
+      + '<span class="lb">'+esc(ev.title)+'</span>'
+      + '<button class="x-del" data-act="ev-del" data-id="'+ev.id+'" aria-label="일정 삭제">✕</button></div>';
+  });
+  html += '</div>';
+  dds.forEach(function(dd){
+    html += '<div class="dp-dday">🎯 D-DAY · '+esc(dd.title)+'</div>';
+  });
+  html += '<div class="form-row dp-form">'
+    + '<select id="ev-who" aria-label="대상">'+opts+'</select>'
+    + '<input id="ev-time" type="time" aria-label="시간 (비우면 종일)" title="비워두면 종일">'
+    + '<input id="ev-title" type="text" placeholder="일정 이름 (예: 치과 예약)" maxlength="40">'
+    + '<button class="add-btn" data-act="ev-add" aria-label="일정 추가">+</button></div>'
+    + '</div>';
+  return html;
 }
 function ddayVal(dateStr0){
   var t = parseDate(todayStr()), d = parseDate(dateStr0);
@@ -826,18 +954,45 @@ function kidHeaderHTML(k){
             : '<div class="next-rank"><b>👑 최고 계급 달성!</b></div>');
 }
 function schedTodayHTML(k){
-  var di = dayIdxMon(), list = (k.sched[di]||[]).slice().sort(function(a,b){ return a.s<b.s?-1:1; });
+  var di = dayIdxMon(), tds = todayStr();
   var now = new Date(), curMin = now.getHours()*60+now.getMinutes();
+  var rows = [];
+  /* 1) 일반 주간 시간표 */
+  (k.sched[di]||[]).forEach(function(it){
+    rows.push({s:it.s||"", e:it.e||"", l:it.l, kind:"tt"});
+  });
+  /* 2) 오늘 날짜에 잡힌 특별 일정 (가족 = 둘 다, 아준/서준 = 해당 아이만) */
+  eventsFor(tds, k).forEach(function(ev){
+    rows.push({s:ev.time||"", e:"", l:ev.title, kind:"ev", who:ev.who});
+  });
+  /* 3) 날짜가 오늘인 D-Day */
+  ddaysOn(tds).forEach(function(dd){
+    rows.push({s:"", e:"", l:dd.title, kind:"dday"});
+  });
+  /* 종일(시간 없음)이 위, 시간이 있는 일정은 시간순 정렬 */
+  rows.sort(function(a,b){
+    if(a.s !== b.s) return a.s < b.s ? -1 : 1;
+    var ord = {dday:0, ev:1, tt:2};
+    return ord[a.kind] - ord[b.kind];
+  });
   var html = '<div class="sub-sec"><div class="sec-head"><div class="sec-title">📖 오늘의 일정 ('+DAYS[di]+')</div>'
     + '<button class="mini-btn" data-act="tt-open" data-id="'+k.id+'">전체 시간표</button></div><div class="sched-list">';
-  if(!list.length) html += '<div class="sched-empty">오늘은 일정이 없어요! 자유예요 🎉</div>';
-  list.forEach(function(it){
-    var sl = schedLine(it);
-    var mm = it.s.split(":"), sm = (+mm[0])*60+(+mm[1]);
-    var em = sm + 90; /* 종료 시간 없는 일정은 90분간 '지금' 표시 */
-    if(it.e){ var me = it.e.split(":"); em = (+me[0])*60+(+me[1]); }
-    var nowCls = (curMin>=sm && curMin<em) ? " sched-now" : "";
-    html += '<div class="sched-item'+nowCls+'"><span class="tm">'+sl.t+'</span><span class="lb">'+esc(it.l)+'</span></div>';
+  if(!rows.length) html += '<div class="sched-empty">오늘은 일정이 없어요! 자유예요 🎉</div>';
+  rows.forEach(function(it){
+    var nowCls = "";
+    if(it.kind==="tt" && it.s){
+      var mm = it.s.split(":"), sm = (+mm[0])*60+(+mm[1]);
+      var em = sm + 90; /* 종료 시간 없는 일정은 90분간 '지금' 표시 */
+      if(it.e){ var me = it.e.split(":"); em = (+me[0])*60+(+me[1]); }
+      if(curMin>=sm && curMin<em) nowCls = " sched-now";
+    }
+    var cls = "sched-item" + nowCls + (it.kind==="ev" ? " sp" : it.kind==="dday" ? " dday" : "");
+    var badge = it.kind==="dday" ? '<span class="sched-badge dd">🎯 D-DAY</span>'
+      : it.kind==="ev" ? '<span class="sched-badge ev">📌 특별</span>' : '';
+    var tmHtml = it.kind==="dday" ? ""
+      : '<span class="tm'+(it.s?"":" all")+'">'+(it.s ? (fmtT(it.s)+(it.e ? " ~ "+fmtT(it.e) : "")) : "종일")+'</span>';
+    var lbText = it.kind==="dday" ? "· "+it.l : it.l;
+    html += '<div class="'+cls+'">' + tmHtml + badge + '<span class="lb">'+esc(lbText)+'</span></div>';
   });
   html += '</div></div>';
   return html;
@@ -1223,7 +1378,31 @@ document.addEventListener("click", function(e){
   switch(act){
     case "cal-prev": S.calM--; if(S.calM<0){S.calM=11;S.calY--;} save(); renderCal(); break;
     case "cal-next": S.calM++; if(S.calM>11){S.calM=0;S.calY++;} save(); renderCal(); break;
-    case "cal-today": S.calY=new Date().getFullYear(); S.calM=new Date().getMonth(); save(); renderCal(); break;
+    case "cal-today": S.calY=new Date().getFullYear(); S.calM=new Date().getMonth(); S.selDate = todayStr(); save(); renderCal(); break;
+    case "cal-select": {
+      if(!el.dataset.date) return;
+      S.selDate = el.dataset.date;
+      var sd = parseDate(S.selDate);
+      S.calY = sd.getFullYear(); S.calM = sd.getMonth();
+      save(); renderCal(); break;
+    }
+    case "ev-add": {
+      var evT = document.getElementById("ev-title");
+      if(!evT) return;
+      var evTitle = evT.value.trim();
+      if(!evTitle){ evT.focus(); return; }
+      var evWho = document.getElementById("ev-who").value || "가족";
+      var evTime = document.getElementById("ev-time").value || "";
+      var evDate = S.selDate || todayStr();
+      S.evWho = evWho;
+      S.events = S.events || [];
+      S.events.push({id:uid(), date:evDate, who:evWho, time:evTime, title:evTitle});
+      save(); renderCal(); S.kids.forEach(renderKid); renderStandby(); break;
+    }
+    case "ev-del": {
+      S.events = (S.events||[]).filter(function(x){ return x.id!==el.dataset.id; });
+      save(); renderCal(); S.kids.forEach(renderKid); renderStandby(); break;
+    }
 
     case "dday-add": {
       var tt = document.getElementById("dday-title"), td = document.getElementById("dday-date");
@@ -1231,11 +1410,11 @@ document.addEventListener("click", function(e){
       if(!title){ tt.focus(); return; }
       if(!td.value){ td.focus(); return; }
       S.ddys.push({id:uid(), title:title, date:td.value});
-      save(); renderCal(); break;
+      save(); renderCal(); S.kids.forEach(renderKid); renderStandby(); break;
     }
     case "dday-del":
       S.ddys = S.ddys.filter(function(d){ return d.id!==el.dataset.id; });
-      save(); renderCal(); break;
+      save(); renderCal(); S.kids.forEach(renderKid); renderStandby(); break;
 
     case "rank-open": renderRankTable(); document.getElementById("modal-rank").classList.remove("hidden"); break;
     case "rank-close": document.getElementById("modal-rank").classList.add("hidden"); break;
@@ -1341,6 +1520,14 @@ document.addEventListener("keydown", function(e){
     var b = document.querySelector('[data-act="dday-add"]');
     if(b) b.click();
   }
+  if(e.key==="Enter" && e.target && e.target.id==="ev-title"){
+    var b3 = document.querySelector('[data-act="ev-add"]');
+    if(b3) b3.click();
+  }
+  if((e.key==="Enter" || e.key===" ") && e.target && e.target.dataset && e.target.dataset.act==="cal-select"){
+    e.preventDefault();
+    e.target.click();
+  }
   if(e.key==="Enter" && e.target && e.target.id==="wish-title"){
     var b2 = document.querySelector('[data-act="wish-add"]');
     if(b2) b2.click();
@@ -1389,6 +1576,18 @@ function renderAll(){
     k.sched = k.sched || {};
     for(var d=0; d<7; d++) k.sched[d] = k.sched[d]||[];
   });
+  /* 날짜별 특별 일정(events)·선택 날짜는 기존 저장본에 없으면 빈 값으로 보충 (기존 데이터는 그대로) */
+  if(!Array.isArray(S.events)) S.events = [];
+  S.events = S.events.filter(function(ev){ return ev && ev.date && ev.title; });
+  S.events.forEach(function(ev){
+    if(!ev.id) ev.id = uid();
+    if(!ev.who) ev.who = "가족";
+    if(ev.time == null) ev.time = "";
+  });
+  if(!S.evWho) S.evWho = "가족";
+  if(!S.selDate) S.selDate = todayStr();
+  if(!S.ddys) S.ddys = [];
+  save();
   normalizeDay();
   renderAll();
   renderClock();
