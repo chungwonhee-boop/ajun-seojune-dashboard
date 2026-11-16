@@ -266,8 +266,16 @@ main{
 .rank-row.top{background:linear-gradient(135deg,#fff8dc,#fdf0c2); border-color:#dfb94a}
 .rank-cond{
   font-size:10.5px; font-weight:800; color:#8a6508; background:#fdf4da; border-radius:999px;
-  padding:3px 9px; white-space:nowrap; align-self:flex-start;
+  padding:3px 9px; white-space:nowrap;
 }
+.rk-right{flex:none; text-align:right}
+.rank-sub{font-size:10px; font-weight:700; color:#b0a589; margin-top:3px; font-variant-numeric:tabular-nums}
+.rank-guide{
+  font-size:11.5px; color:var(--ink2); background:#fbf7ee; border:1px dashed #ddd0b2;
+  border-radius:10px; padding:8px 11px; margin-bottom:10px; line-height:1.5;
+}
+.rank-guide b{color:#8a6508}
+.nr-days{color:#a99c78; font-weight:700}
 /* timetable modal */
 .tt-tabs{display:flex; gap:5px; margin-bottom:12px; flex-wrap:wrap}
 .tt-tab{
@@ -382,6 +390,12 @@ footer{max-width:1560px; margin:0 auto; padding:6px 20px 26px; font-size:11px; c
    ================================================================ */
 
 var LS_KEY = "ajunSeojunFamilyDashboard.v1";
+var SCHEMA_VERSION = 2; /* v2: 승급 페이스 재설계(하루 올클리어 ≈ 100 XP) + 아준·서준 퀘스트 균형 */
+/* v1 기본 퀘스트 제목 — 이 목록 그대로면 사용자가 손대지 않은 기본값으로 보고 v2로 교체 */
+var V1_QUEST_TITLES = {
+  ajun: ["아침 스트레칭 (8:00)","아침 리프팅 (8:20)","학교 책가방 챙기기","학교 숙제 / 알림장 확인","방 정리 5분"],
+  seojun: ["학교 숙제","학교 책가방 싸기","수학 숙제","구몬 숙제","한자 숙제","영어학원 숙제","딥독 숙제"]
+};
 
 /* ---------- 날짜/시간 유틸 ---------- */
 function pad2(n){ return String(n).padStart(2,"0"); }
@@ -414,9 +428,17 @@ var RANKS = [
   {lv:11, card:2,  name:"대주교",         desc:"왕국의 백성을 위해 조언하는 지혜의 정점."},
   {lv:12, card:1,  name:"위대한 달무티",  desc:"왕국의 최고 통치자! 조커처럼 무엇이든 될 수 있어요. 👑"}
 ];
-function xpNeeded(l){ return 100 + (l-1)*20; }
-var CUM = [0,0]; /* CUM[l] = 레벨 l에 도달하기 위해 필요한 누적 XP (l>=2) */
-for (var _l=2; _l<=12; _l++) CUM[_l] = CUM[_l-1] + xpNeeded(_l-1);
+/* 누적 XP 기준 — 하루 올클리어(퀘스트 + 조커 보너스 30) ≈ 100 XP로 계산한 페이스
+   Lv.1→2 : +300 XP (약 3일) / Lv.2→5 : +700 XP씩 (약 7일) / Lv.5→12 : +1,400 XP씩 (약 2주) */
+var CUM = [0, 0, 300, 1000, 1700, 2400, 3800, 5200, 6600, 8000, 9400, 10800, 12200];
+function xpNeeded(l){ return (l>=1 && l<=11) ? (CUM[l+1]-CUM[l]) : 0; }
+function daysForXp(xp){ return Math.max(1, Math.ceil(xp/100)); }
+function paceLabel(xp){
+  var d = daysForXp(xp);
+  if(d>=14 && d%7===0) return "약 "+(d/7)+"주";
+  return "약 "+d+"일";
+}
+function won(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
 function levelForXp(xp){
   var lv = 1;
   while (lv < 12 && xp >= CUM[lv+1]) lv++;
@@ -524,7 +546,7 @@ function Q(title,xp,days,goal){ return {id:uid(), title:title, xp:xp, days:days,
 function defaultState(){
   var mon0 = weekMonday(); var wk = [];
   return {
-    v:1, lastDate: todayStr(),
+    v:SCHEMA_VERSION, lastDate: todayStr(),
     calY: new Date().getFullYear(), calM: new Date().getMonth(),
     kids: [
       {
@@ -538,12 +560,17 @@ function defaultState(){
           5:[{s:"10:00",e:"12:00",l:"딥독"},{s:"12:30",e:"13:30",l:"영어학원"}],
           6:[]
         },
+        /* 아준: 운동이 많고 숙제는 적은 편 — 매일 줄넘기 추가, 하루 올클리어 ≈ 70 + 조커 30 = 100 XP */
         quests:[
-          Q("아침 스트레칭 (8:00)",10,[0,1,2,3],4),
-          Q("아침 리프팅 (8:20)",10,[0,1,2,3],4),
-          Q("학교 책가방 챙기기",10,allDays(),7),
-          Q("학교 숙제 / 알림장 확인",20,allDays(),7),
-          Q("방 정리 5분",10,allDays(),7)
+          Q("아침 스트레칭 (8:00)",5,[0,1,2,3],4),      /* 월~목 주4 */
+          Q("아침 리프팅 (8:20)",5,[0,1,2,3],4),        /* 월~목 주4 */
+          Q("매일 줄넘기",15,allDays(),7),
+          Q("학교 숙제",15,[0,1,2,3,4],5),              /* 월~금 주5 */
+          Q("수학 숙제",15,allDays(),7),
+          Q("구몬 숙제",15,allDays(),7),
+          Q("한자 숙제",10,[4],1),                      /* 주1회 */
+          Q("딥독 숙제",5,[3],1),                       /* 주1회 · 목요일 */
+          Q("주말 운동 (축구·자전거)",25,[5,6],2)
         ]
       },
       {
@@ -556,14 +583,18 @@ function defaultState(){
           4:[{s:"07:00",e:"14:30",l:"학교"},{s:"15:00",e:"16:30",l:"축구"}],
           5:[], 6:[]
         },
+        /* 서준: 숙제 규칙 그대로(학교 숙제 주5·책가방 주5·수학 주6·구몬 주5·한자 주4·영어 주2·딥독 주2)
+           + 하루 생활 2개(아침 준비·주말 운동)로 아준과 같은 하루 ≈ 70 + 조커 30 = 100 XP */
         quests:[
-          Q("학교 숙제",20,[0,1,2,3,4],5),
+          Q("학교 숙제",10,[0,1,2,3,4],5),
           Q("학교 책가방 싸기",10,[0,1,2,3,4],5),
-          Q("수학 숙제",20,daysExcept([0]),6),   /* 월요일 = 수학과외 날 */
-          Q("구몬 숙제",15,daysExcept([1]),5),   /* 화요일 = 구몬 국어 날 */
-          Q("한자 숙제",15,daysExcept([0]),4),   /* 월요일 = 한자과외 날 */
-          Q("영어학원 숙제",20,daysExcept([1,2]),2), /* 화·수 = 영어학원 날 */
-          Q("딥독 숙제",20,allDays(),2)
+          Q("수학 숙제",15,[1,2,3,4,5,6],6),            /* 월요일 = 수학과외 날 */
+          Q("구몬 숙제",15,[0,1,2,3,4],5),              /* 화요일 = 구몬 국어 날 */
+          Q("한자 숙제",10,[1,2,3,5],4),                /* 월요일 = 한자과외 날 */
+          Q("영어학원 숙제",15,[0,6],2),                /* 화·수 = 영어학원 날 */
+          Q("딥독 숙제",15,[5,6],2),
+          Q("아침 준비 (양치·세수·옷)",15,allDays(),7),
+          Q("주말 운동 (축구·자전거)",15,[5,6],2)
         ]
       }
     ],
@@ -596,6 +627,26 @@ function load(){
 }
 function save(){
   try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){}
+}
+
+/* ---------- 버전 마이그레이션 (v1 → v2) ----------
+   이전에 저장된 데이터가 남아 있어도 새 퀘스트 기본값·새 계급 기준이 적용되도록 함.
+   XP·계급 도감·시간표·D-Day·위시리스트·메모는 그대로 유지하고,
+   퀘스트 목록만 “v1 기본값 그대로”인 경우에만 v2 균형 퀘스트로 교체. */
+function migrate(st){
+  var from = st.v || 1;
+  if(from >= SCHEMA_VERSION){ st.v = SCHEMA_VERSION; return st; }
+  var fresh = defaultState();
+  (st.kids||[]).forEach(function(k){
+    var def = fresh.kids.filter(function(x){ return x.id===k.id; })[0];
+    if(!def) return;
+    var titles = (k.quests||[]).map(function(q){ return q.title; });
+    var v1 = V1_QUEST_TITLES[k.id] || [];
+    var untouched = titles.length>0 && titles.every(function(t){ return v1.indexOf(t)>=0; });
+    if(untouched) k.quests = def.quests;
+  });
+  st.v = SCHEMA_VERSION;
+  return st;
 }
 
 /* 오늘 요일 기준: 활성/휴식 퀘스트 분리, 지난날 체크 해제 */
@@ -728,7 +779,10 @@ function schedLine(it){
 }
 function kidHeaderHTML(k){
   var lv = levelForXp(k.xp), r = rankOf(lv);
-  var cur = k.xp - CUM[lv], need = xpNeeded(lv);
+  var isMax = lv>=12;
+  var cur = k.xp - CUM[lv];
+  var need = isMax ? 0 : xpNeeded(lv);
+  var pct = isMax ? 100 : Math.min(100, Math.round(cur/need*100));
   var next = lv<12 ? rankOf(lv+1) : null;
   var dots = "";
   for(var i=1;i<=12;i++) dots += '<span class="dex-dot'+(i<=k.maxLevel?" on":"")+'">'+rankOf(i).card+'</span>';
@@ -738,11 +792,11 @@ function kidHeaderHTML(k){
     + '<div class="kid-name-row"><span class="kid-name">'+esc(k.name)+'</span><span class="lvl-chip">Lv.'+lv+' · '+r.card+' '+r.name+'</span></div>'
     + '<span class="kid-memo" data-act="memo-edit" data-id="'+k.id+'" title="눌러서 메모 수정">'+(k.memo? esc(k.memo) : "✎ 나이 · 학교 등 메모 추가")+'</span>'
     + '</div></div>'
-    + '<div class="xp-row"><div class="xp-bar"><div class="xp-fill" style="width:'+Math.min(100,Math.round(cur/need*100))+'%"></div></div>'
-    + '<span class="xp-num">'+cur+'/'+need+' XP</span></div>'
+    + '<div class="xp-row"><div class="xp-bar"><div class="xp-fill" style="width:'+pct+'%"></div></div>'
+    + '<span class="xp-num">'+(isMax ? "👑 최고 계급 · "+won(k.xp)+" XP" : cur+"/"+need+" XP")+'</span></div>'
     + '<div class="dex-row"><span class="dex-label">계급 도감</span><span class="dex-dots">'+dots+'</span>'
     + '<span class="dex-label">'+k.maxLevel+'/12</span></div>'
-    + (next ? '<div class="next-rank">다음 계급: <b>Lv.'+next.lv+' · '+next.card+' '+next.name+'</b> — '+(need-cur)+' XP 남았어요!</div>'
+    + (next ? '<div class="next-rank">다음 계급: <b>Lv.'+next.lv+' · '+next.card+' '+next.name+'</b> — '+(need-cur)+' XP 남았어요! <span class="nr-days">(하루 올클리어 약 '+daysForXp(need-cur)+'일)</span></div>'
             : '<div class="next-rank"><b>👑 최고 계급 달성!</b></div>');
 }
 function schedTodayHTML(k){
@@ -812,7 +866,7 @@ function questHTML(k){
   html += '<div class="form-row">'
     + '<input id="q-title-'+k.id+'" type="text" placeholder="퀘스트 추가" maxlength="40" style="flex:2 1 90px">'
     + '<select id="q-xp-'+k.id+'">'
-    + '<option value="10">+10</option><option value="15">+15</option><option value="20" selected>+20</option>'
+    + '<option value="5">+5</option><option value="10" selected>+10</option><option value="15">+15</option><option value="20">+20</option>'
     + '<option value="30">+30</option><option value="50">+50</option></select>'
     + '<select id="q-goal-'+k.id+'">'
     + '<option value="7" selected>매일</option><option value="1">주 1회</option><option value="2">주 2회</option><option value="3">주 3회</option>'
@@ -870,15 +924,21 @@ function renderWish(){ document.getElementById("col-wish").innerHTML = wishHTML(
 
 /* ---------- 렌더링: 계급표 모달 ---------- */
 function renderRankTable(){
-  var html = "";
+  var html = '<div class="rank-guide">하루 퀘스트를 모두 끝내면 <b>약 100 XP</b>(조커 보너스 +30 포함) — 그 기준으로 승급까지 걸리는 기간을 적었어요.</div>';
   for(var i=12; i>=1; i--){
     var r = rankOf(i);
-    var cond = i===1 ? "시작 계급" : "누적 XP "+CUM[i]+" 이상";
+    var cond, sub;
+    if(i===1){ cond = "시작 계급"; sub = "누적 0 XP"; }
+    else {
+      var step = CUM[i]-CUM[i-1];
+      cond = "+"+won(step)+" XP · "+paceLabel(step);
+      sub = "누적 "+won(CUM[i])+" XP";
+    }
     html += '<div class="rank-row'+(i===12?" top":"")+'">'
       + '<div style="flex:none">'+badgeSVG(i,44)+'</div>'
       + '<div style="flex:1; min-width:0"><div class="rk-name"><small>Lv.'+r.lv+'</small>카드 '+r.card+' · '+r.name+'</div>'
       + '<div class="rk-desc">'+r.desc+'</div></div>'
-      + '<span class="rank-cond">'+cond+'</span></div>';
+      + '<div class="rk-right"><span class="rank-cond">'+cond+'</span><div class="rank-sub">'+sub+'</div></div></div>';
   }
   document.getElementById("rank-table").innerHTML = html;
 }
@@ -1184,6 +1244,9 @@ function renderAll(){
   if(!S){
     S = defaultState();
     S.ddys = sampleDdays();
+    save();
+  }else{
+    S = migrate(S);
     save();
   }
   /* 기존 저장본과의 호환: 누락 필드 채우기 */
