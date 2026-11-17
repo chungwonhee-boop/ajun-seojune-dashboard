@@ -453,7 +453,7 @@ footer{max-width:1560px; margin:0 auto; padding:6px 20px 26px; font-size:11px; c
    ================================================================ */
 
 var LS_KEY = "ajunSeojunFamilyDashboard.v1";
-var SCHEMA_VERSION = 3; /* v3: 구몬 숙제에서 구몬 수업일(화) 제외 — 아준 주6·서준 주5 */
+var SCHEMA_VERSION = 4; /* v4: 아준 딥독 숙제 요일 목요일 → 화요일 */
 /* v1 기본 퀘스트 제목 — 이 목록 그대로면 사용자가 손대지 않은 기본값으로 보고 v2로 교체 */
 var V1_QUEST_TITLES = {
   ajun: ["아침 스트레칭 (8:00)","아침 리프팅 (8:20)","학교 책가방 챙기기","학교 숙제 / 알림장 확인","방 정리 5분"],
@@ -632,7 +632,7 @@ function defaultState(){
           Q("수학 숙제",15,allDays(),7),
           Q("구몬 숙제",15,daysExcept([1]),6),           /* 화요일 = 구몬 선생님 오시는 날(19:10~19:30) 제외 */
           Q("한자 숙제",10,[4],1),                      /* 주1회 */
-          Q("딥독 숙제",5,[3],1),                       /* 주1회 · 목요일 */
+          Q("딥독 숙제",5,[1],1),                       /* 주1회 · 화요일 */
           Q("주말 운동 (축구·자전거)",25,[5,6],2)
         ]
       },
@@ -692,11 +692,12 @@ function save(){
   try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){}
 }
 
-/* ---------- 버전 마이그레이션 (v1 → v2 → v3) ----------
+/* ---------- 버전 마이그레이션 (v1 → v2 → v3 → v4) ----------
    이전에 저장된 데이터가 남아 있어도 새 퀘스트 기본값·새 계급 기준이 적용되도록 함.
    XP·계급 도감·시간표·D-Day·위시리스트·메모·완료 기록은 그대로 유지하고,
    퀘스트 목록만 “v1 기본값 그대로”인 경우에만 새 기본 퀘스트로 교체.
-   v2 → v3: 구몬 숙제의 하는 요일·주간 목표만 갱신(화요일 제외). 나머지 항목은 손대지 않음. */
+   v2 → v3: 구몬 숙제의 하는 요일·주간 목표만 갱신(화요일 제외). 나머지 항목은 손대지 않음.
+   v3 → v4: 아준 딥독 숙제의 요일을 목요일 → 화요일로 (주1회 목표 그대로). 나머지 항목은 손대지 않음. */
 var V2_GUMON_DAYS = { ajun:[0,1,2,3,4,5,6], seojun:[0,1,2,3,4] }; /* v2까지의 구몬 숙제 기본 요일 */
 function sameDays(a,b){
   a=(a||[]).slice().sort(function(x,y){return x-y;}); b=(b||[]).slice().sort(function(x,y){return x-y;});
@@ -713,14 +714,12 @@ function migrate(st){
     var v1 = V1_QUEST_TITLES[k.id] || [];
     var untouched = titles.length>0 && titles.every(function(t){ return v1.indexOf(t)>=0; });
     if(from < 2){
-      /* v1 저장본: 퀘스트를 손대지 않았을 때만 v2·v3 기본 퀘스트로 교체 */
+      /* v1 저장본: 퀘스트를 손대지 않았을 때만 v2·v3·v4 기본 퀘스트로 교체 */
       if(untouched) k.quests = def.quests;
-      return;
     }
     if(from < 3){
       var gq = def.quests.filter(function(x){ return x.title === "구몬 숙제"; })[0];
-      if(!gq) return;
-      (k.quests||[]).forEach(function(q){
+      if(gq) (k.quests||[]).forEach(function(q){
         if(q.title !== "구몬 숙제") return;
         if(sameDays(q.days, V2_GUMON_DAYS[k.id])){
           /* 기본값 그대로였으면 새 기본값(화요일 제외·주간 목표)으로 교체 */
@@ -730,6 +729,13 @@ function migrate(st){
           q.days = (q.days||allDays()).filter(function(d){ return d !== 1; });
           if(q.goal > q.days.length) q.goal = q.days.length || 1;
         }
+      });
+    }
+    if(from < 4 && k.id === "ajun"){
+      /* v3 → v4: 아준 딥독 숙제는 화요일로 (기존 완료·감점 기록은 그대로) */
+      (k.quests||[]).forEach(function(q){
+        if(q.title !== "딥독 숙제") return;
+        q.days = [1]; q.goal = 1;
       });
     }
   });
