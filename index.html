@@ -401,6 +401,69 @@ main{
   background:#e9f6ee; border:1.5px solid #bfe2cd; border-radius:999px; padding:5px 12px;
   animation:pop .4s cubic-bezier(.2,1.6,.4,1), fadeout .6s ease 2.6s forwards; pointer-events:none;
 }
+/* ===== 저녁 식단 ===== */
+.meal-box{border-top:1.5px dashed var(--line); margin-top:15px; padding-top:13px}
+.meal-card{
+  border:1.5px solid #e6d9bd; border-radius:13px; margin-top:8px; padding:11px 12px;
+  background:linear-gradient(180deg,#fffdf6,#fdf7ea);
+}
+.meal-daychip{
+  font-size:10.5px; font-weight:800; color:#fff; white-space:nowrap;
+  background:linear-gradient(135deg,#c9a227,#e6c25a); border-radius:999px; padding:2.5px 9px;
+}
+.meal-hero{display:flex; align-items:flex-start; gap:8px}
+.meal-hero + .meal-hero{margin-top:7px}
+.meal-label{flex:0 0 44px; font-size:10.5px; font-weight:800; color:#a08a5a; padding-top:3px; letter-spacing:-.2px}
+.meal-main{font-size:16.5px; font-weight:900; color:#5c4a25; letter-spacing:-.35px; line-height:1.35; word-break:keep-all}
+.meal-sides{display:flex; gap:4px; flex-wrap:wrap; padding-top:1px}
+.meal-side{
+  font-size:11.5px; font-weight:800; color:#7a6a45; background:#fff;
+  border:1px solid #e4d7b8; border-radius:999px; padding:3px 9px; white-space:nowrap;
+}
+.meal-side.none{color:#b6ab92; border-style:dashed; font-weight:700}
+.meal-bf{
+  margin-top:9px; font-size:11.5px; color:#8a7f6a; line-height:1.55;
+  background:#f3f7ee; border:1px dashed #cfe0c4; border-radius:9px; padding:6px 9px;
+}
+.meal-bf b{color:#4d6b45; font-weight:800}
+.meal-actions{display:flex; gap:5px; margin-top:8px; flex-wrap:wrap}
+.meal-guide{font-size:10.5px; color:#b6ab92; margin-top:6px; line-height:1.5}
+.meal-week{display:flex; flex-direction:column; gap:4px; margin-top:9px}
+.meal-row{
+  display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; font-size:12px;
+  padding:6px 8px; border-radius:9px; background:#fbf7ee; border:1px solid transparent;
+}
+.meal-row.today{background:#f9efd7; border-color:#e8d19a}
+.meal-row .dw{flex:0 0 15px; font-size:11px; font-weight:900; color:#a08a5a; text-align:center}
+.meal-row.today .dw{color:#8a6508}
+.meal-row .mm{font-weight:800; color:#5c4a25; word-break:keep-all}
+.meal-row .ms{font-size:11.5px; color:#8a7f6a; word-break:keep-all}
+.meal-row .ms:not(:empty)::before{content:"· "; color:#c9bda0}
+.meal-now{
+  font-size:9.5px; font-weight:800; color:#fff; background:var(--gold);
+  border-radius:999px; padding:1.5px 6px; align-self:center; white-space:nowrap;
+}
+.meal-edit{display:flex; flex-direction:column; gap:7px}
+.meal-edit .fl{display:block; font-size:10.5px; font-weight:800; color:#a08a5a; margin-bottom:3px}
+.meal-edit input{width:100%}
+.meal-edit .row{display:flex; gap:6px; align-items:center}
+/* 아이들 메뉴 요청 보드 */
+.mreq{border-top:1px dashed #e4d7b8; margin-top:11px; padding-top:10px}
+.mreq-head{display:flex; align-items:center; justify-content:space-between; gap:6px}
+.mreq-title{font-size:12px; font-weight:800; color:#8a6a3a}
+.mreq .form-row{margin-top:7px}
+.mreq-list{display:flex; flex-direction:column; gap:5px; margin-top:7px}
+.mreq-item{
+  display:flex; align-items:center; gap:7px; background:#fff;
+  border:1px solid var(--line); border-radius:10px; padding:6px 8px;
+}
+.mreq-item.done{background:#f3f6ef}
+.mreq-item .w-check{width:20px; height:20px; font-size:11px; margin-top:0}
+.mreq-item.done .w-check{background:var(--green); border-color:var(--green)}
+.mreq-menu{flex:1; min-width:0; font-size:12.5px; font-weight:700; word-break:break-all}
+.mreq-item.done .mreq-menu{text-decoration:line-through; color:#a9a08a}
+.mreq-empty{font-size:11px; color:#b6ab92; padding:6px 2px}
+
 footer{max-width:1560px; margin:0 auto; padding:6px 20px 26px; font-size:11px; color:#b6ab92; text-align:center}
 </style>
 </head>
@@ -453,7 +516,7 @@ footer{max-width:1560px; margin:0 auto; padding:6px 20px 26px; font-size:11px; c
    ================================================================ */
 
 var LS_KEY = "ajunSeojunFamilyDashboard.v1";
-var SCHEMA_VERSION = 4; /* v4: 아준 딥독 숙제 요일 목요일 → 화요일 */
+var SCHEMA_VERSION = 5; /* v5: 요일별 주간 저녁 식단(meals) 추가 — 기존 데이터는 그대로 두고 식단만 덧붙임 */
 /* v1 기본 퀘스트 제목 — 이 목록 그대로면 사용자가 손대지 않은 기본값으로 보고 v2로 교체 */
 var V1_QUEST_TITLES = {
   ajun: ["아침 스트레칭 (8:00)","아침 리프팅 (8:20)","학교 책가방 챙기기","학교 숙제 / 알림장 확인","방 정리 5분"],
@@ -606,6 +669,44 @@ function allDays(){ return [0,1,2,3,4,5,6]; }
 function daysExcept(arr){ return allDays().filter(function(d){ return arr.indexOf(d)<0; }); }
 function Q(title,xp,days,goal){ return {id:uid(), title:title, xp:xp, days:days, goal:goal, week:[], done:false, doneDate:null}; }
 
+/* ---------- 주간 저녁 식단 (월=0 … 일=6) ----------
+   다음 날 아침은 전날 저녁을 그대로 데워 먹는(재탕) 기준이라, 아침 참고 줄에는 어제 저녁을 보여 줌. */
+var DEFAULT_MEALS = [
+  {main:"미역국 · 돼지목살",       side:"오뎅볶음 · 김치"},          /* 월 */
+  {main:"소고기무국 · 고등어구이", side:"오이무침 · 김"},            /* 화 */
+  {main:"카레 · 치킨",              side:"오이무침 · 김치 · 김"},      /* 수 */
+  {main:"닭고기 감자국 · 소고기구이", side:"멸치 · 진미채"},          /* 목 */
+  {main:"설렁탕 · 닭갈비",         side:"오뎅볶음 · 김치"},          /* 금 */
+  {main:"계란초밥 · 유부초밥",     side:"오이무침 · 김"},            /* 토 */
+  {main:"미역국(또는 소고기무국) · 고등어구이", side:"멸치 · 진미채 · 김치"} /* 일 */
+];
+function defaultMeals(){
+  return DEFAULT_MEALS.map(function(m){ return {main:m.main, side:m.side}; });
+}
+/* 저장본의 식단을 7일 형태로 정리 — 사용자가 고친 값은 그대로 두고 빈 값만 기본값으로 채움 */
+function normalizeMeals(arr){
+  if(!Array.isArray(arr) || arr.length !== 7) return defaultMeals();
+  return DEFAULT_MEALS.map(function(def, i){
+    var m = arr[i] || {};
+    var main = (typeof m.main === "string" && m.main.trim()) ? m.main.trim() : def.main;
+    var side = (typeof m.side === "string") ? m.side.trim() : def.side;
+    return {main:main, side:side};
+  });
+}
+function meals(){ S.meals = normalizeMeals(S.meals); return S.meals; }
+/* 아이들 메뉴 요청 — 식단을 짜는 참고용. who: 아준 / 서준 / 공통 */
+function normalizeMealReqs(arr){
+  if(!Array.isArray(arr)) return [];
+  return arr.filter(function(r){ return r && typeof r.menu === "string" && r.menu.trim(); }).map(function(r){
+    return {id: r.id || uid(), who: r.who || "공통", menu: r.menu.trim().slice(0,30), done: !!r.done};
+  });
+}
+function mealSideChips(side){
+  var parts = String(side||"").split(/[·,、]/).map(function(s){ return s.trim(); }).filter(function(s){ return s; });
+  if(!parts.length) return '<span class="meal-side none">반찬 없음</span>';
+  return parts.map(function(p){ return '<span class="meal-side">'+esc(p)+'</span>'; }).join("");
+}
+
 function defaultState(){
   var mon0 = weekMonday(); var wk = [];
   return {
@@ -665,7 +766,9 @@ function defaultState(){
     wish:[
       {id:uid(), title:"조커 카드 스티커 세트", who:"아준", memo:"", done:false},
       {id:uid(), title:"새 축구공", who:"서준", memo:"", done:false}
-    ]
+    ],
+    meals: defaultMeals(),
+    mealReqs: []
   };
 }
 /* D-Day 샘플: 오늘 기준 +4일, +5일 */
@@ -692,12 +795,13 @@ function save(){
   try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){}
 }
 
-/* ---------- 버전 마이그레이션 (v1 → v2 → v3 → v4) ----------
+/* ---------- 버전 마이그레이션 (v1 → v2 → v3 → v4 → v5) ----------
    이전에 저장된 데이터가 남아 있어도 새 퀘스트 기본값·새 계급 기준이 적용되도록 함.
    XP·계급 도감·시간표·D-Day·위시리스트·메모·완료 기록은 그대로 유지하고,
    퀘스트 목록만 “v1 기본값 그대로”인 경우에만 새 기본 퀘스트로 교체.
    v2 → v3: 구몬 숙제의 하는 요일·주간 목표만 갱신(화요일 제외). 나머지 항목은 손대지 않음.
-   v3 → v4: 아준 딥독 숙제의 요일을 목요일 → 화요일로 (주1회 목표 그대로). 나머지 항목은 손대지 않음. */
+   v3 → v4: 아준 딥독 숙제의 요일을 목요일 → 화요일로 (주1회 목표 그대로). 나머지 항목은 손대지 않음.
+   v4 → v5: 주간 저녁 식단(meals)만 새로 채움. 퀘스트·XP·기록·일정·위시·메모는 손대지 않음. */
 var V2_GUMON_DAYS = { ajun:[0,1,2,3,4,5,6], seojun:[0,1,2,3,4] }; /* v2까지의 구몬 숙제 기본 요일 */
 function sameDays(a,b){
   a=(a||[]).slice().sort(function(x,y){return x-y;}); b=(b||[]).slice().sort(function(x,y){return x-y;});
@@ -739,6 +843,11 @@ function migrate(st){
       });
     }
   });
+  if(from < 5){
+    /* v4 → v5: 식단 상태만 추가 (없으면 기본 7일 식단, 이미 있으면 사용자가 고친 값 유지) */
+    st.meals = normalizeMeals(st.meals);
+    st.mealReqs = normalizeMealReqs(st.mealReqs);
+  }
   st.v = SCHEMA_VERSION;
   return st;
 }
@@ -781,7 +890,7 @@ function restQuests(k){
 }
 
 /* ---------- 렌더링: 공통 ---------- */
-var ui = { ttKid:null, ttDay:dayIdxMon(), openSettings:{} };
+var ui = { ttKid:null, ttDay:dayIdxMon(), openSettings:{}, mealsWeek:false, mealEditDay:null, mealFocus:false };
 
 function fmtClock(d){
   var h = d.getHours(), m = pad2(d.getMinutes()), s = pad2(d.getSeconds());
@@ -880,7 +989,8 @@ function renderCal(){
     }
   }
   html += '</div>';
-  document.getElementById("col-cal").innerHTML = html + dayPanelHTML() + ddayHTML();
+  document.getElementById("col-cal").innerHTML = html + dayPanelHTML() + ddayHTML() + '<div id="meals-box"></div>';
+  renderMeals();
 }
 /* 선택한 날짜의 특별 일정 패널 (달력 바로 아래) */
 function dayPanelHTML(){
@@ -1123,6 +1233,87 @@ function renderKid(k){
       inp.addEventListener("blur", done);
       inp.addEventListener("keydown", function(e){ if(e.key==="Enter") inp.blur(); });
     });
+  }
+}
+
+/* ---------- 렌더링: 오늘의 저녁 식단 ---------- */
+function mealsHTML(){
+  var di = dayIdxMon();
+  var m = meals()[di];
+  var y = (di+6)%7, ym = meals()[y];
+  var editing = (ui.mealEditDay === di);
+  var html = '<div class="meal-box"><div class="sec-head">'
+    + '<div class="sec-title">🍚 오늘의 저녁 식단</div>'
+    + '<span class="meal-daychip">'+DAYS[di]+'요일</span></div>'
+    + '<div class="meal-card">';
+  if(editing){
+    html += '<div class="meal-edit">'
+      + '<div><label class="fl" for="meal-main-in">국/메인</label>'
+      + '<input id="meal-main-in" type="text" maxlength="40" value="'+esc(m.main)+'" aria-label="오늘 저녁 국·메인"></div>'
+      + '<div><label class="fl" for="meal-side-in">반찬 <span style="font-weight:600;color:#b6ab92">(· 로 구분 · 없으면 비워 두기)</span></label>'
+      + '<input id="meal-side-in" type="text" maxlength="60" value="'+esc(m.side)+'" aria-label="오늘 저녁 반찬"></div>'
+      + '<div class="row"><button class="add-btn" data-act="meal-save" data-day="'+di+'">저장</button>'
+      + '<button class="mini-btn" data-act="meal-cancel">취소</button></div></div>';
+  }else{
+    html += '<div class="meal-hero"><span class="meal-label">국/메인</span>'
+      + '<span class="meal-main">'+esc(m.main || "—")+'</span></div>'
+      + '<div class="meal-hero"><span class="meal-label">반찬</span>'
+      + '<span class="meal-sides">'+mealSideChips(m.side)+'</span></div>'
+      + '<div class="meal-bf">🌅 오늘 아침(재탕) · <b>어제 '+DAYS[y]+'요일 저녁</b> — '
+      + esc(ym.main) + (ym.side ? " · "+esc(ym.side) : "") + '</div>';
+  }
+  html += '</div>';
+  html += '<div class="meal-actions">'
+    + (editing ? '' : '<button class="mini-btn" data-act="meal-edit">✎ 오늘 메뉴 수정</button>')
+    + '<button class="mini-btn" data-act="meal-week">'+(ui.mealsWeek ? "오늘만 보기" : "주간 전체 보기")+'</button></div>';
+  if(ui.mealsWeek){
+    html += '<div class="meal-week">';
+    for(var d=0; d<7; d++){
+      var md = meals()[d];
+      html += '<div class="meal-row'+(d===di?" today":"")+'">'
+        + '<span class="dw">'+DAYS[d]+'</span>'
+        + '<span class="mm">'+esc(md.main || "—")+'</span>'
+        + (md.side ? '<span class="ms">'+esc(md.side)+'</span>' : '')
+        + (d===di ? '<span class="meal-now">오늘</span>' : '')
+        + '</div>';
+    }
+    html += '</div><div class="meal-guide">아침은 전날 저녁을 재탕해요 · 메뉴는 ✎ 오늘 메뉴 수정에서 바꿀 수 있어요</div>';
+  }
+  html += mealReqsHTML();
+  html += '</div>';
+  return html;
+}
+/* 아이들이 먹고 싶은 메뉴를 적어 두는 작은 요청 보드 */
+function mealReqsHTML(){
+  var list = S.mealReqs || [];
+  var html = '<div class="mreq">'
+    + '<div class="mreq-head"><span class="mreq-title">🙋 아이들 메뉴 요청</span>'
+    + '<span class="q-count">'+list.length+'개</span></div>'
+    + '<div class="form-row" style="flex-wrap:nowrap">'
+    + '<select id="mreq-who" style="flex:0 0 68px" aria-label="누가 요청했나요">'
+    + '<option value="아준">아준</option><option value="서준">서준</option><option value="공통">공통</option></select>'
+    + '<input id="mreq-menu" type="text" placeholder="먹고 싶은 메뉴" maxlength="30" style="flex:1 1 0; min-width:0" aria-label="먹고 싶은 메뉴">'
+    + '<button class="add-btn" data-act="mreq-add" aria-label="메뉴 요청 추가">+</button></div>'
+    + '<div class="mreq-list">';
+  if(!list.length) html += '<div class="mreq-empty">아직 요청이 없어요 — 적어 두면 다음 식단에 넣어 볼게요 🍚</div>';
+  list.forEach(function(r){
+    html += '<div class="mreq-item'+(r.done?" done":"")+'">'
+      + '<button class="w-check" data-act="mreq-toggle" data-id="'+r.id+'" aria-label="반영 완료">✓</button>'
+      + '<span class="mreq-menu">'+esc(r.menu)+'</span>'
+      + '<span class="who-b '+whoClass(r.who)+'">'+esc(r.who)+'</span>'
+      + '<button class="x-del" data-act="mreq-del" data-id="'+r.id+'" aria-label="삭제">✕</button></div>';
+  });
+  html += '</div></div>';
+  return html;
+}
+function renderMeals(){
+  var box = document.getElementById("meals-box");
+  if(!box) return;
+  box.innerHTML = mealsHTML();
+  if(ui.mealFocus){
+    var mi = document.getElementById("meal-main-in");
+    ui.mealFocus = false;
+    if(mi){ mi.focus(); mi.select(); }
   }
 }
 
@@ -1529,6 +1720,42 @@ document.addEventListener("click", function(e){
     case "wish-del":
       S.wish = S.wish.filter(function(x){ return x.id!==el.dataset.id; });
       save(); renderWish(); break;
+
+    case "meal-week":
+      ui.mealsWeek = !ui.mealsWeek; renderMeals(); break;
+    case "meal-edit":
+      ui.mealEditDay = dayIdxMon(); ui.mealFocus = true; renderMeals(); break;
+    case "meal-cancel":
+      ui.mealEditDay = null; renderMeals(); break;
+    case "meal-save": {
+      var miEl = document.getElementById("meal-main-in");
+      var msEl = document.getElementById("meal-side-in");
+      if(!miEl || !msEl) return;
+      var mMain = miEl.value.trim(), mSide = msEl.value.trim();
+      if(!mMain){ miEl.focus(); return; }
+      var mDay = (el.dataset.day == null) ? dayIdxMon() : +el.dataset.day;
+      meals()[mDay] = {main:mMain, side:mSide};
+      ui.mealEditDay = null;
+      save(); renderMeals(); break;
+    }
+    case "mreq-add": {
+      var mq = document.getElementById("mreq-menu");
+      if(!mq) return;
+      var mtitle = mq.value.trim();
+      if(!mtitle){ mq.focus(); return; }
+      var mwho = document.getElementById("mreq-who").value || "공통";
+      S.mealReqs = S.mealReqs || [];
+      S.mealReqs.push({id:uid(), who:mwho, menu:mtitle.slice(0,30), done:false});
+      save(); renderMeals(); break;
+    }
+    case "mreq-toggle": {
+      var mr = (S.mealReqs||[]).find(function(x){ return x.id===el.dataset.id; });
+      if(mr){ mr.done = !mr.done; save(); renderMeals(); }
+      break;
+    }
+    case "mreq-del":
+      S.mealReqs = (S.mealReqs||[]).filter(function(x){ return x.id!==el.dataset.id; });
+      save(); renderMeals(); break;
   }
 });
 /* select(주간 목표) 변경 이벤트 */
@@ -1558,6 +1785,14 @@ document.addEventListener("keydown", function(e){
   if((e.key==="Enter" || e.key===" ") && e.target && e.target.dataset && e.target.dataset.act==="cal-select"){
     e.preventDefault();
     e.target.click();
+  }
+  if(e.key==="Enter" && e.target && (e.target.id==="meal-main-in" || e.target.id==="meal-side-in")){
+    var bm = document.querySelector('[data-act="meal-save"]');
+    if(bm) bm.click();
+  }
+  if(e.key==="Enter" && e.target && e.target.id==="mreq-menu"){
+    var bq = document.querySelector('[data-act="mreq-add"]');
+    if(bq) bq.click();
   }
   if(e.key==="Enter" && e.target && e.target.id==="wish-title"){
     var b2 = document.querySelector('[data-act="wish-add"]');
@@ -1618,6 +1853,9 @@ function renderAll(){
   if(!S.evWho) S.evWho = "가족";
   if(!S.selDate) S.selDate = todayStr();
   if(!S.ddys) S.ddys = [];
+  /* 주간 저녁 식단: 기존 저장본에 없으면 기본 7일 식단으로 채움 (있으면 사용자가 고친 값 유지) */
+  S.meals = normalizeMeals(S.meals);
+  S.mealReqs = normalizeMealReqs(S.mealReqs);
   save();
   normalizeDay();
   renderAll();
