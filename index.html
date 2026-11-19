@@ -516,7 +516,24 @@ footer{max-width:1560px; margin:0 auto; padding:6px 20px 26px; font-size:11px; c
    ================================================================ */
 
 var LS_KEY = "ajunSeojunFamilyDashboard.v1";
-var SCHEMA_VERSION = 5; /* v5: 요일별 주간 저녁 식단(meals) 추가 — 기존 데이터는 그대로 두고 식단만 덧붙임 */
+var SCHEMA_VERSION = 6; /* v6: 달력 특별 일정에 2026-12-11 단상 예약 추가 — 기존 기록은 그대로 두고 이 일정만 덧붙임 */
+/* 앱 기본값에 함께 넣는 고정 특별 일정(달력 events). 저장본에 이미 있으면 중복 추가하지 않음 */
+var FIXED_EVENTS = [
+  {date:"2026-12-11", time:"19:30", who:"가족", title:"단상 예약 (3명)"}
+];
+function fixedEvents(){
+  return FIXED_EVENTS.map(function(fx){ return {id:uid(), date:fx.date, who:fx.who, time:fx.time, title:fx.title}; });
+}
+function applyFixedEvents(st){
+  st.events = Array.isArray(st.events) ? st.events : [];
+  FIXED_EVENTS.forEach(function(fx){
+    var dup = st.events.some(function(ev){
+      return ev && ev.date===fx.date && String(ev.title||"").trim()===fx.title;
+    });
+    if(!dup) st.events.push({id:uid(), date:fx.date, who:fx.who, time:fx.time, title:fx.title});
+  });
+  return st;
+}
 /* v1 기본 퀘스트 제목 — 이 목록 그대로면 사용자가 손대지 않은 기본값으로 보고 v2로 교체 */
 var V1_QUEST_TITLES = {
   ajun: ["아침 스트레칭 (8:00)","아침 리프팅 (8:20)","학교 책가방 챙기기","학교 숙제 / 알림장 확인","방 정리 5분"],
@@ -763,6 +780,7 @@ function defaultState(){
       }
     ],
     ddys:[],
+    events: fixedEvents(),
     wish:[
       {id:uid(), title:"조커 카드 스티커 세트", who:"아준", memo:"", done:false},
       {id:uid(), title:"새 축구공", who:"서준", memo:"", done:false}
@@ -795,13 +813,15 @@ function save(){
   try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){}
 }
 
-/* ---------- 버전 마이그레이션 (v1 → v2 → v3 → v4 → v5) ----------
+/* ---------- 버전 마이그레이션 (v1 → v2 → v3 → v4 → v5 → v6) ----------
    이전에 저장된 데이터가 남아 있어도 새 퀘스트 기본값·새 계급 기준이 적용되도록 함.
    XP·계급 도감·시간표·D-Day·위시리스트·메모·완료 기록은 그대로 유지하고,
    퀘스트 목록만 “v1 기본값 그대로”인 경우에만 새 기본 퀘스트로 교체.
    v2 → v3: 구몬 숙제의 하는 요일·주간 목표만 갱신(화요일 제외). 나머지 항목은 손대지 않음.
    v3 → v4: 아준 딥독 숙제의 요일을 목요일 → 화요일로 (주1회 목표 그대로). 나머지 항목은 손대지 않음.
-   v4 → v5: 주간 저녁 식단(meals)만 새로 채움. 퀘스트·XP·기록·일정·위시·메모는 손대지 않음. */
+   v4 → v5: 주간 저녁 식단(meals)만 새로 채움. 퀘스트·XP·기록·일정·위시·메모는 손대지 않음.
+   v5 → v6: 달력 특별 일정에 2026-12-11 단상 예약만 덧붙임(같은 날짜·제목이 이미 있으면 건너뜀).
+            기존 특별 일정·D-Day·식단·XP·기록·위시·메모는 그대로 유지. */
 var V2_GUMON_DAYS = { ajun:[0,1,2,3,4,5,6], seojun:[0,1,2,3,4] }; /* v2까지의 구몬 숙제 기본 요일 */
 function sameDays(a,b){
   a=(a||[]).slice().sort(function(x,y){return x-y;}); b=(b||[]).slice().sort(function(x,y){return x-y;});
@@ -847,6 +867,10 @@ function migrate(st){
     /* v4 → v5: 식단 상태만 추가 (없으면 기본 7일 식단, 이미 있으면 사용자가 고친 값 유지) */
     st.meals = normalizeMeals(st.meals);
     st.mealReqs = normalizeMealReqs(st.mealReqs);
+  }
+  if(from < 6){
+    /* v5 → v6: 2026-12-11 단상 예약 일정만 추가 (이미 같은 일정이 있으면 중복 추가 안 함) */
+    applyFixedEvents(st);
   }
   st.v = SCHEMA_VERSION;
   return st;
