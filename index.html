@@ -528,7 +528,10 @@ function applyFixedEvents(st){
   st.events = Array.isArray(st.events) ? st.events : [];
   FIXED_EVENTS.forEach(function(fx){
     var dup = st.events.some(function(ev){
-      return ev && ev.date===fx.date && String(ev.title||"").trim()===fx.title;
+      if(!ev || ev.date !== fx.date) return false;
+      var t = String(ev.title||"").trim();
+      /* 같은 날짜에 같은 제목이거나, 이미 단상 관련 일정을 직접 넣어 둔 경우에도 중복으로 봂 */
+      return t === fx.title || t.indexOf("단상") >= 0;
     });
     if(!dup) st.events.push({id:uid(), date:fx.date, who:fx.who, time:fx.time, title:fx.title});
   });
